@@ -107,8 +107,8 @@ router.route('/:id')
     }
 
     try {
-      let blog = await users.getUserById(req.params.id)
-      return res.status(200).json(blog);
+      let user = await users.getUserById(req.params.id)
+      return res.status(200).json(user);
     } catch (e) {
       if (e === 'No user with that id') {
         return res.status(404).json({error: `Failed to get user: ${e}`})
@@ -173,7 +173,7 @@ router.route('/:id')
         req.session.user);
       return res.status(200).json(updatedUser);
     } catch (e) {
-      if (e === 'blog not found') {
+      if (e === 'user not found') {
         res.status(404).json({error: `Failed to update user: ${e}`})
       } else if (e === 'User did not create this account and cannot update it') {
         res.status(401).json({error: `Failed to update user: ${e}`})
@@ -233,6 +233,41 @@ router.route('/login')
     }    
   });
 
+router.route('/requests/:userId/:teamId')
+    .post(accountVerify, async(req, res) => {
+        try {
+            helper.validText(req.params.teamId, 'team ID');
+            if (!ObjectId.isValid(req.params.teamId)) throw 'invalid object ID';
+
+            helper.validText(req.params.userId, 'user ID');
+            if (!ObjectId.isValid(req.params.userId)) throw 'invalid object ID';   
+        } catch (e) {
+            return res.status(400).json({error: e});
+        }
+        try {
+            const result = await users.sendTeamInvite(req.params.userId, req.params.teamId);
+            res.status(200).json(result);
+        } catch (e) {
+            res.status(500).json({error: `Failed to invite user to team: ${e}`})
+        }
+    })
+    .delete(accountVerify, async(req, res) => {
+        try {
+            helper.validText(req.params.teamId, 'team ID');
+            if (!ObjectId.isValid(req.params.teamId)) throw 'invalid object ID';
+
+            helper.validText(req.params.memberId, 'member ID');
+            if (!ObjectId.isValid(req.params.memberId)) throw 'invalid object ID';   
+        } catch (e) {
+            return res.status(400).json({error: e});
+        }
+        try {
+            const result = await users.removeTeamInvite(req.params.userId, req.params.teamId);
+            res.status(200).json(result);
+        } catch (e) {
+            res.status(500).json({error: `Failed to remove invite: ${e}`})
+        }
+    });
 
 
 

@@ -1,7 +1,7 @@
 //import mongo collections, bcrypt and implement the following data functions
 import * as helper from '../helpers.js'
 import {ObjectId} from 'mongodb';
-import {users} from '../config/mongoCollections.js';
+import {users, teams} from '../config/mongoCollections.js';
 import bcrypt from 'bcrypt';
 import { sports } from "../../shared/enums/sports.js";
 import { skills } from "../../shared/enums/skills.js";
@@ -77,7 +77,9 @@ export const register = async (
     birthday: birthdate,
     preferredSports,
     experience,
-    location
+    location,
+    teamInvites: [],
+    createdAt: new Date()
   };
 
   const userInsert = await userCollection.insertOne(newUser);
@@ -122,8 +124,8 @@ export const getUserById = async (userId) => {
         
     const userCollection = await users();
    
-    const user = await userCollection.findOne({_id: new ObjectId(blogId)});
-    if (!user) throw 'No blog with that id';
+    const user = await userCollection.findOne({_id: new ObjectId(userId)});
+    if (!user) throw 'No user with that id';
     user._id = user._id.toString();
     return user;
 };
@@ -132,7 +134,7 @@ export const getAllUsers = async () => {
     
     const userCollection = await users();
     let userList = await userCollection.find({}).toArray();
-    if (!userList) throw 'Could not get any blogs';
+    if (!userList) throw 'Could not get any users';
     
     return userList;
 };
@@ -202,7 +204,8 @@ export const updateUser = async(
       birthday: birthdate,
       preferredSports,
       experience,
-      location
+      location,
+      updatedAt: new Date()
     };
 
     const userExists = await getUserById(userId);
@@ -215,26 +218,102 @@ export const updateUser = async(
       {$set: updatedUserData},
       {returnDocument: 'after'}
     );
-    if (!newUser) throw `Could not update the account with id ${blogId}`;
+    if (!newUser) throw `Could not update the account with id ${userId}`;
 
     return newUser;
 
 }
 
-export const deleteComment = async (userId, user) => {
+export const deleteUser = async (userId, user) => {
 
     userId = helper.validText(userId, 'user ID');
     if (!ObjectId.isValid(userId)) throw 'Invalid user ID';
 
     const userCollection = await users();
- 
+    const teamCollection = await teams();
+
     const userExists = await userCollection.findOne({_id: new ObjectId(userId)});
 
     if (!userExists) throw 'user not found';
-    if (userExists._id.toString() !== user._id.toString()) throw 'User did not create this account and cannot update it'
+    if (userExists._id.toString() !== user._id.toString()) throw 'User did not create this account and cannot delete it'
     
     await userCollection.deleteOne({ _id: new ObjectId(userId) });
 
+    // Team Cleanup
+
+    await teamCollection.deleteMany({ owner: ObjectId(userId)});
+
+    await teamCollection.updateMany(
+        { "joinRequests.userId": new ObjectId(userId) },
+        { 
+            $pull: {
+                joinRequests: { userId: new ObjectId(userId) }
+            }
+        }
+    );
+
+    await teamCollection.updateMany(
+        { members: new ObjectId(userId) },
+        {
+            $pull: { members: new ObjectId(userId) }
+        }
+    );
+
     return { deleted: userId };
 
+};
+
+// Invite Request Handling
+
+export const sendTeamInvite = async (userId, teamId) => {
+    userId = helper.validText(userId, 'user ID');
+    teamId = helper.validText(teamId, 'team ID');
+
+    if (!ObjectId.isValid(userId)) throw 'Invalid user ID';
+    if (!ObjectId.isValid(teamId)) throw 'Invalid team ID';
+
+    const userCollection = await users();
+    const teamCollection = await teams();
+
+    const user = await userCollection.findOne({ _id: new ObjectId(userId) });
+    if (!user) throw 'User not found';
+
+    const team = await teamCollection.findOne({ _id: new ObjectId(teamId) });
+    if (!team) throw 'Team not found';
+
+    if (user.teamInvites.some(inv => inv.teamId.toString() === teamId.toString())) throw 'Invite already sent';
+    if (team.members.some(m => m.toString() === userId.toString())) throw 'User is already a member of the team';
+    
+    await userCollection.updateOne(
+        { _id: new ObjectId(userId) },
+        { $push: { teamInvites: { teamId: new ObjectId(teamId), requestedAt: new Date() } } }
+    );
+
+    return { invited: userId, teamId };
+};
+
+export const removeTeamInvite = async (userId, teamId) => {
+    userId = helper.validText(userId, 'user ID');
+    teamId = helper.validText(teamId, 'team ID');
+
+    if (!ObjectId.isValid(userId)) throw 'Invalid user ID';
+    if (!ObjectId.isValid(teamId)) throw 'Invalid team ID';
+
+    const userCollection = await users();
+    const teamCollection = await teams();
+
+    const user = await userCollection.findOne({ _id: new ObjectId(userId) });
+    if (user) throw 'User not found';
+
+    const team = await teamCollection.findOne({ _id: new ObjectId(teamId) });
+    if (!team) throw 'Team not found';
+
+    if (!user.teamInvites.some(inv => inv.teamId.toString() === teamId.toString())) throw 'Invite was never sent';
+    
+    await userCollection.updateOne(
+        { _id: new ObjectId(userId) },
+        { $pull: { teamInvites: { teamId: new ObjectId(teamId), requestedAt: new Date() } } }
+    );
+
+    return { removed: userId, teamId };
 };

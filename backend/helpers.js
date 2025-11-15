@@ -14,7 +14,22 @@ function validName(str, type) {
     const trimmed = str.trim();
     if (trimmed.length < 5 || trimmed.length > 25) throw `${type} name must be between 5 and 25 characters long`;
     
-    if (!/^[\p{L}'.\-\s]+$/u.test(trimmed)) throw `${type} name can only contain letters and certain special characters (hyphens, apostrophe, period)`;
+    if (!/^[\p{L}'.\-]+$/u.test(trimmed)) throw `${type} name can only contain letters and certain special characters (hyphens, apostrophe, period)`;
+
+    return trimmed;
+}
+
+function validTeam(str) {
+
+    if (str === undefined || str === null) throw `Team name must be provided`;
+
+    if (typeof str !== 'string') throw `Team name must be a valid string`;
+    
+
+    const trimmed = str.trim();
+    if (trimmed.length < 3 || trimmed.length > 25) throw `Team name must be between 3 and 25 characters long`;
+    
+    if (!/^[\p{L}0-9'.\-\s]+$/u.test(trimmed)) throw `Team name can only contain letters, numbers and certain special characters (hyphens, apostrophe, period)`;
 
     return trimmed;
 }
@@ -131,4 +146,4 @@ async function getCoords(city, state) {
   };
 }
 
-export {validName, validPassword, validEmail, getCoords, validUsername, validText, calculateAge, validBday, validNumber, matchingPassword};
+export {validName, validPassword, validEmail, getCoords, validUsername, validTeam, validText, calculateAge, validBday, validNumber, matchingPassword};
