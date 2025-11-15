@@ -1,0 +1,13 @@
+export function accountVerify(req, res, next) {
+  if (!req.session.user) {
+    return res.status(401).json({ error: "No user logged in to perform this action" });
+  }
+  next();
+}
+
+export function accountLogged(req, res, next) {
+  if (req.session.user) {
+    return res.status(400).json({ error: "User is already logged in" });
+  }
+  next(); 
+}
