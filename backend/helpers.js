@@ -146,4 +146,14 @@ async function getCoords(city, state) {
   };
 }
 
-export {validName, validPassword, validEmail, getCoords, validUsername, validTeam, validText, calculateAge, validBday, validNumber, matchingPassword};
+function validScore (score) {
+    if (score === undefined || score === null) throw `score is required`;
+   
+    if (typeof score !== "number" && !Number.isInteger(score) && score < 0) throw `score must be a non negative integer`;
+
+    if (score > 100) throw `score is too large to be a valid score`;
+
+    return score;
+}
+
+export {validName, validScore, validPassword, validEmail, getCoords, validUsername, validTeam, validText, calculateAge, validBday, validDate, validNumber, matchingPassword};

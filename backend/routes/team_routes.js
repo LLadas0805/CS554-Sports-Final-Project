@@ -60,7 +60,7 @@ router.route('/create')
     try {
       const team = await teams.createTeam(
         name,
-        req.session.user_id,
+        req.session.user._id,
         description,
         state,
         city,
@@ -130,7 +130,7 @@ router.route('/:id')
     }
 
     try {
-      let updatedUser = await users.updateUser(
+      let updatedTeam = await teams.updateTeam(
         req.params.id, 
         name,
         description,
@@ -139,7 +139,7 @@ router.route('/:id')
         preferredSports,
         experience,
         req.session.user);
-      return res.status(200).json(updatedUser);
+      return res.status(200).json(updatedTeam);
     } catch (e) {
       if (e === 'team not found') {
         res.status(404).json({error: `Failed to update team: ${e}`})
