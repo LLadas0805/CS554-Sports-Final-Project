@@ -1,7 +1,12 @@
 import NodeGeocoder from 'node-geocoder';
 
 const geocoder = NodeGeocoder({
-  provider: 'openstreetmap'
+  provider: 'openstreetmap',
+  httpAdapter: 'https',
+  formatter: null,
+  headers: {
+    'User-Agent': 'CS-554-Final-Project (lukeladas05@gmail.com)'
+  }
 });
 
 function validName(str, type) {
@@ -12,7 +17,7 @@ function validName(str, type) {
     
 
     const trimmed = str.trim();
-    if (trimmed.length < 5 || trimmed.length > 25) throw `${type} name must be between 5 and 25 characters long`;
+    if (trimmed.length < 2 || trimmed.length > 25) throw `${type} name must be between 2 and 25 characters long`;
     
     if (!/^[\p{L}'.\-]+$/u.test(trimmed)) throw `${type} name can only contain letters and certain special characters (hyphens, apostrophe, period)`;
 
@@ -35,7 +40,7 @@ function validTeam(str) {
 }
 
 function validNumber(phoneNumber) {
-    let trimPhone = validText(phoneNumber);
+    let trimPhone = validText(phoneNumber, "phone number");
     if (!/^\d{3}-\d{3}-\d{4}$/.test(trimPhone)) throw `${trimPhone} needs to follow the format of ###-###-####`
     
     return trimPhone;
@@ -50,14 +55,14 @@ function validUsername(str) {
     
 
     const trimmed = str.trim();
-    if (trimmed.length < 5) throw `Username must be at least 5 characters long`;
+    if (trimmed.length < 3) throw `Username must be at least 3 characters long`;
     if (!/^(?=.*[A-Za-z])[A-Za-z0-9]+$/.test(trimmed)) throw `Username needs to contain letters and can also include numbers`;
 
     return trimmed;
 }
 
 function validEmail(email) {
-    let trimEmail = validText(email);
+    let trimEmail = validText(email, "email");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimEmail)) throw `${trimEmail} needs to follow a valid email format`
             
     if (trimEmail.length > 254) throw `${trimEmail} cannot exceed 254 characters`
@@ -94,7 +99,7 @@ function matchingPassword(password, confirmPassword) {
     if (confirmPassword === undefined || password === null) throw 'Confirmed assword must be provided';
     if (typeof confirmPassword !== 'string') throw 'Confirmed password must be a valid string';
 
-    const trimmed = password.trim();
+    const trimmed = confirmPassword.trim();
 
     if (password !== trimmed) throw 'Passwords do not match'
     
@@ -132,7 +137,7 @@ function validBday(bday) {
 
   if (age < 18) throw "User must be at least 18 years old.";
 
-  return dob; 
+  return date; 
 }
 
 async function getCoords(city, state) {

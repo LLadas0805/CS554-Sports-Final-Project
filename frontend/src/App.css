@@ -103,3 +103,41 @@
   margin-right: 10px;
 }
 
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.form-input {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.form-input:focus {
+  border-color: #4a90e2;
+  outline: none;
+  box-shadow: 0 0 4px rgba(74, 144, 226, 0.4);
+}
+
+.filters {
+  display: flex;
+  align-items: center; 
+  gap: 2rem;
+}
+
+.form-group-inline {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group-inline label {
+  margin-bottom: 6px;
+  font-weight: 600;
+}

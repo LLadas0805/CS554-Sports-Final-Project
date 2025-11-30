@@ -1,18 +1,23 @@
 import {Router} from 'express';
 import {ObjectId} from 'mongodb';
 import * as helper from '../helpers.js'
-import { accountVerify, accountLogged } from '../middleware.js';
+import { accountVerify, accountLogged } from '../middleware/middleware_auth.js';
+import {cacheTeamId, cacheTeams } from "../middleware/middleware_cache_team.js"
 import * as teams from '../data/teams.js';
-import { sports } from "../../shared/enums/sports.js";
-import { skills } from "../../shared/enums/skills.js";
+import sports from "../../shared/enums/sports.js";
+import skills  from "../../shared/enums/skills.js";
 import statesCities from '../../shared/data/US_States_and_Cities.json' with { type: 'json' };
 
+import redis from 'redis';
+const client = redis.createClient();
+client.connect().then(() => {});
 const router = Router();
 
 router.route('/')
-  .get(async (req, res) => {
+  .get(cacheTeams, async (req, res) => {
     try {
       const teamList = await teams.getAllTeams();
+      await client.set("teams", JSON.stringify(teamList));
       return res.status(200).json(teamList);
     } catch (e) {
       return res.status(500).json({ error: `Failed to get teams: ${e}` });
@@ -68,6 +73,8 @@ router.route('/create')
         experience
       );
 
+      await client.set(`team_id:${req.params.id}`, JSON.stringify(team)); 
+      await client.del("teams")
       return res.status(200).json(team);
       
     } catch (e) {
@@ -76,7 +83,7 @@ router.route('/create')
   });
 
 router.route('/:id')
-  .get(async (req, res) => {
+  .get(cacheTeamId, async (req, res) => {
     try {
       helper.validText(req.params.id, 'team ID');
       if (!ObjectId.isValid(req.params.id)) throw 'invalid object ID';
@@ -86,6 +93,8 @@ router.route('/:id')
 
     try {
       let team = await teams.getTeamById(req.params.id)
+      await client.set(`team_id:${req.params.id}`, JSON.stringify(team)); 
+      await client.del("teams");
       return res.status(200).json(team);
     } catch (e) {
       if (e === 'No team with that id') {
@@ -139,7 +148,10 @@ router.route('/:id')
         preferredSports,
         experience,
         req.session.user);
-      return res.status(200).json(updatedTeam);
+
+        await client.set(`team_id:${req.params.id}`, JSON.stringify(updatedTeam)); 
+        await client.del("teams");
+        return res.status(200).json(updatedTeam);
     } catch (e) {
       if (e === 'team not found') {
         res.status(404).json({error: `Failed to update team: ${e}`})
@@ -160,6 +172,8 @@ router.route('/:id')
     }
     try {
       let deleteTeam = await teams.deleteTeam(req.params.id, req.session.user);
+      await client.del(`team_id:${req.params.id}`);
+      await client.del("teams")
       return res.status(200).json(deleteTeam);
     } catch (e) {
       if (e === 'team not found') {

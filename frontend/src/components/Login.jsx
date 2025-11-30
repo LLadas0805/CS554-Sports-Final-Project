@@ -1,12 +1,73 @@
 import {Link} from 'react-router-dom';
+import React, { useState } from 'react';
+import axios from 'axios';
 
 function Login(props) {
+
+  const defaultData = {
+        username: '',
+        password: '',
+  }
+
+  const [formData, setFormData] = useState(defaultData);
+
+  const handleChange = (e) => {
+        const { name, value } = e.target;
+
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value
+        }));
+  };
+
+  const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.post("http://localhost:3000/user/login", formData, { withCredentials: true }, {
+                headers: { "Content-Type": "application/json" }
+            });
+            console.log("Login successful:", response.data);
+            alert("Login successful!");
+            setFormData(defaultData); 
+        } catch (err) {
+            console.error(err.response?.data?.error);
+            alert(err.response?.data?.error || err.message);
+        }
+    };
+
+ 
   return (
     <div>
         <h1>Sign in</h1>
         <div className="form">
-
-        </div>
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label htmlFor="username">Username</label>
+                        <input
+                        id="username"
+                        name="username"
+                        className="form-input"
+                        placeholder="Username"
+                        value={formData.username}
+                        onChange={handleChange}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="password">Password</label>
+                        <input
+                        id="password"
+                        name="password"
+                        type="password"
+                        className="form-input"
+                        placeholder="Password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        />
+                    </div>
+                    <br></br>
+                    <button type="submit">Login</button>
+                </form>
+              </div>
         <div className = "pages">
             <h2>Don't have an account?</h2>
             <Link className='link' to='/signup'>

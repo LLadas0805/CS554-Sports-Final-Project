@@ -1,18 +1,25 @@
 import {Router} from 'express';
 import {ObjectId} from 'mongodb';
 import * as helper from '../helpers.js'
-import { accountVerify, accountLogged } from '../middleware.js';
+import { accountVerify, accountLogged } from '../middleware/middleware_auth.js';
+import {cacheGameId, cacheGames } from "../middleware/middleware_cache_game.js"
 import * as games from '../data/games.js';
-import { sports } from "../../shared/enums/sports.js";
+import sports from "../../shared/enums/sports.js";
 import statesCities from '../../shared/data/US_States_and_Cities.json' with { type: 'json' };
 
+import redis from 'redis';
+const client = redis.createClient();
+client.connect().then(() => {});
 const router = Router();
 
+
+
 router.route('/')
-  .get(async (req, res) => {
+  .get(cacheGames, async (req, res) => {
     try {
-      const teamList = await games.getAllGames();
-      return res.status(200).json(teamList);
+      const gameList = await games.getAllGames();
+      await client.set("games", JSON.stringify(gameList));
+      return res.status(200).json(gameList);
     } catch (e) {
       return res.status(500).json({ error: `Failed to get games: ${e}` });
     }
@@ -69,6 +76,9 @@ router.route('/create')
         date
       );
 
+      await client.set(`game_id:${req.params.id}`, JSON.stringify(game)); 
+      await client.del("games")
+
       return res.status(200).json(game);
       
     } catch (e) {
@@ -77,7 +87,7 @@ router.route('/create')
   });
 
 router.route('/:id')
-  .get(async (req, res) => {
+  .get(cacheGameId, async (req, res) => {
     try {
       helper.validText(req.params.id, 'game ID');
       if (!ObjectId.isValid(req.params.id)) throw 'invalid object ID';
@@ -87,6 +97,8 @@ router.route('/:id')
 
     try {
       let game = await games.getGameById(req.params.id)
+      await client.set(`_id:${req.params.id}`, JSON.stringify(game)); 
+      await client.del("games");
       return res.status(200).json(game);
     } catch (e) {
       if (e === 'No game with that id') {
@@ -137,6 +149,10 @@ router.route('/:id')
         score2,
         sport,
         date);
+
+      await client.set(`_id:${req.params.id}`, JSON.stringify(updatedGame)); 
+      await client.del("games");
+
       return res.status(200).json(updatedGame);
     } catch (e) {
       if (e === 'game not found') {
@@ -158,6 +174,8 @@ router.route('/:id')
     }
     try {
       let deleteGame = await games.deleteGame(req.params.id, req.session.user);
+      await client.del(`game_id:${req.params.id}`);
+      await client.del("games")
       return res.status(200).json(deleteGame);
     } catch (e) {
       if (e === 'team not found') {

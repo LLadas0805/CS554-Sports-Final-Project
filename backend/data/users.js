@@ -3,8 +3,8 @@ import * as helper from '../helpers.js'
 import {ObjectId} from 'mongodb';
 import {users, teams} from '../config/mongoCollections.js';
 import bcrypt from 'bcrypt';
-import { sports } from "../../shared/enums/sports.js";
-import { skills } from "../../shared/enums/skills.js";
+import sports from "../../shared/enums/sports.js";
+import skills  from "../../shared/enums/skills.js";
 import statesCities from '../../shared/data/US_States_and_Cities.json' with { type: 'json' };
 
 export const register = async (
@@ -22,9 +22,10 @@ export const register = async (
   experience
 ) => {
 
+  console.log(username, firstName, lastName, email, phoneNumber, password, confirmPassword, state, city, birthday, preferredSports, experience);
+  const newUserName = helper.validUsername(username);
   const newFirstName = helper.validName(firstName, "First");
   const newLastName = helper.validName(lastName, "Last");
-  const newUserName = helper.validUsername(username);
   const newPassword = helper.validPassword(password);
   helper.matchingPassword(newPassword, confirmPassword);
   const newEmail = helper.validEmail(email);

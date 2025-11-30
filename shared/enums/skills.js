@@ -1,1 +1,2 @@
-export const skills = ["casual", "intermediate", "competitive"];
+const skills = ["Casual", "Intermediate", "Competitive"];
+export default skills;

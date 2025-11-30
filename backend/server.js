@@ -4,10 +4,10 @@ import express from 'express';
 const app = express();
 import session from 'express-session';
 import configRoutes from './routes/index.js';
-//import redis from 'redis';
+import redis from 'redis';
 import cors from 'cors';
-//const client = redis.createClient();
-//client.connect().then(() => {});
+const client = redis.createClient();
+client.connect().then(() => {});
 
 
 app.use(express.json());
@@ -38,7 +38,10 @@ const rewriteUnsupportedBrowserMethods = (req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(rewriteUnsupportedBrowserMethods);
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
 
 configRoutes(app);
 
