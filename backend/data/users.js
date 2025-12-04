@@ -18,11 +18,12 @@ export const register = async (
   state,
   city,
   birthday,
-  preferredSports,
-  experience
+  advancedSports,
+  intermediateSports,
+  beginnerSports
 ) => {
 
-  console.log(username, firstName, lastName, email, phoneNumber, password, confirmPassword, state, city, birthday, preferredSports, experience);
+  console.log(username, firstName, lastName, email, phoneNumber, password, confirmPassword, state, city, birthday, advancedSports, intermediateSports, beginnerSports);
   const newUserName = helper.validUsername(username);
   const newFirstName = helper.validName(firstName, "First");
   const newLastName = helper.validName(lastName, "Last");
@@ -36,15 +37,21 @@ export const register = async (
   if (!statesCities[newState].includes(newCity)) throw `Invalid city for ${newState}`
   const birthdate = helper.validBday(birthday)
 
-  if (!preferredSports || !Array.isArray(preferredSports) || preferredSports.length === 0) throw "Preferred sports must be a non-empty array";
-
-  for (const sport of preferredSports) {
+  if (!advancedSports || !Array.isArray(advancedSports) || !intermediateSports || !Array.isArray(intermediateSports) || !beginnerSports || !Array.isArray(beginnerSports)) throw "One sports array was not provided.";
+  if((intermediateSports.length + beginnerSports.length + advancedSports.length) === 0) throw "You must select at least one sport.";
+    
+  for (const sport of advancedSports) {
     const newSport = helper.validText(sport)
     if (!sports.includes(newSport)) throw `Invalid sport`;
   }
-
-  const newExperience = helper.validText(experience, "skill level")
-  if (!skills.includes(newExperience)) throw 'Skill level not listed'
+  for (const sport of intermediateSports) {
+    const newSport = helper.validText(sport)
+    if (!sports.includes(newSport)) throw `Invalid sport`;
+  }
+  for (const sport of beginnerSports) {
+    const newSport = helper.validText(sport)
+    if (!sports.includes(newSport)) throw `Invalid sport`;
+  }
 
   const userCollection = await users();
   const existingUser = await userCollection.findOne({ 
@@ -76,8 +83,9 @@ export const register = async (
     state,
     city,
     birthday: birthdate,
-    preferredSports,
-    experience,
+    advancedSports,
+    intermediateSports,
+    beginnerSports,
     location,
     teamInvites: [],
     createdAt: new Date()
@@ -96,8 +104,9 @@ export const register = async (
     state: newUser.state,
     city: newUser.city,
     birthday: newUser.birthday,
-    preferredSports: newUser.preferredSports,
-    experience: newUser.experience,
+    advancedSports: newUser.advancedSports,
+    intermediateSports: newUser.intermediateSports,
+    beginnerSports: newUser.beginnerSports
   };
 
 };
@@ -150,8 +159,9 @@ export const updateUser = async(
         birthday,
         state,
         city,
-        preferredSports,
-        experience, 
+        advancedSports,
+        intermediateSports,
+        beginnerSports,
         user) => {
 
     const newFirstName = helper.validName(firstName, "First");
@@ -167,15 +177,22 @@ export const updateUser = async(
     if (!statesCities[newState].includes(newCity)) throw `Invalid city for ${newState}`
     const birthdate = helper.validBday(birthday)
 
-    if (!preferredSports || !Array.isArray(preferredSports) || preferredSports.length === 0) throw "Preferred sports must be a non-empty array";
-
-    for (const sport of preferredSports) {
+    if (!advancedSports || !Array.isArray(advancedSports) || !intermediateSports || !Array.isArray(intermediateSports) || !beginnerSports || !Array.isArray(beginnerSports)) throw "One sports array was not provided.";
+    if((intermediateSports.length + beginnerSports.length + advancedSports.length) === 0) throw "You must select at least one sport.";
+    
+    for (const sport of advancedSports) {
+      const newSport = helper.validText(sport)
+      if (!sports.includes(newSport)) throw `Invalid sport`;
+    }
+    for (const sport of intermediateSports) {
+      const newSport = helper.validText(sport)
+      if (!sports.includes(newSport)) throw `Invalid sport`;
+    }
+    for (const sport of beginnerSports) {
       const newSport = helper.validText(sport)
       if (!sports.includes(newSport)) throw `Invalid sport`;
     }
 
-    const newExperience = helper.validText(experience, "skill level")
-    if (!skills.includes(newExperience)) throw 'Skill level not listed'
 
     const {lat, lon} = await helper.getCoords(newCity, newState)
     const location = {
@@ -203,8 +220,9 @@ export const updateUser = async(
       state,
       city,
       birthday: birthdate,
-      preferredSports,
-      experience,
+      advancedSports,
+      intermediateSports,
+      beginnerSports,
       location,
       updatedAt: new Date()
     };

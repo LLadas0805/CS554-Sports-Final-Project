@@ -17,11 +17,15 @@ function Signup(props) {
         state: '',
         city: '',
         birthday: '',
-        preferredSports: [],
-        experience: ''
+        advancedSports: [],
+        intermediateSports: [],
+        beginnerSports: []
     }
 
     const [formData, setFormData] = useState(defaultData);
+    const [advancedSearch, setAdvancedSearch] = useState('');
+    const [intermediateSearch, setIntermediateSearch] = useState('');
+    const [beginnerSearch, setBeginnerSearch] = useState('');
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -33,21 +37,29 @@ function Signup(props) {
     };
 
     
-    const handleSportsChange = (e) => {
-        const value = e.target.value;
-
+    const handleAddSport = (level, sportName) => {
         setFormData((prev) => {
-            const currentSports = Array.isArray(prev.preferredSports) ? prev.preferredSports : [];
-
-            const alreadySelected = currentSports.includes(value);
+            const currentList = prev[level] || [];
+            if (currentList.includes(sportName)) return prev; // avoid duplicates
 
             return {
             ...prev,
-            preferredSports: alreadySelected
-                ? currentSports.filter((s) => s !== value) 
-                : [...currentSports, value]               
+            [level]: [...currentList, sportName]
             };
         });
+
+        // clear search box for advanced level
+        if (level === 'advancedSports') {
+            setAdvancedSearch('');
+        }
+    };
+
+    
+    const handleRemoveSport = (level, sportName) => {
+        setFormData((prev) => ({
+        ...prev,
+        [level]: prev[level].filter((s) => s !== sportName)
+        }));
     };
 
 
@@ -74,6 +86,12 @@ function Signup(props) {
             console.error(err.response?.data?.error);
             alert(err.response?.data?.error || err.message);
         }
+    };
+
+    const getFilteredSports = (search) => {
+        const query = search.toLowerCase();
+        if (!query) return [];
+        return sports.filter((s) => s.toLowerCase().includes(query));
     };
 
     return (
@@ -217,45 +235,133 @@ function Signup(props) {
                         </select>
                     </div>
                     <br></br>
+                    {/* ADVANCED SPORTS */}
                     <div className="form-group">
-                        <label>Preferred Sports</label>
-
-                        {sports.map((sport) => (
-                        <div key={sport}>
-                            <label>
-                            <input
-                                type="checkbox"
-                                name="sports"
-                                value={sport}
-                                checked={Array.isArray(formData.preferredSports) && formData.preferredSports.includes(sport)}
-                                onChange={handleSportsChange}
-                            />
-                            {sport}
-                            </label>
-                        </div>
-                        ))}
-                    </div>
-                    <br></br>
-                    <div className="form-group">
-                        <label htmlFor="experience">Experience</label>
-                        <select
-                        id="experience"
-                        name="experience"
-                        value={formData.experience}
-                        onChange={handleChange}
+                        <label>Advanced Sports</label>
+                        <input
+                        type="text"
                         className="form-input"
-                        >
-                        <option value="">Select a skill level</option>
-                        {skills.map((skill) => (
-                            <option key={skill} value={skill}>
-                            {skill}
-                            </option>
+                        placeholder="Search and add a sport"
+                        value={advancedSearch}
+                        onChange={(e) => setAdvancedSearch(e.target.value)}
+                        />
+                        {advancedSearch && (
+                        <div className="suggestions">
+                            {getFilteredSports(advancedSearch).map((sport) => (
+                            <div
+                                key={sport}
+                                className="suggestion-item"
+                                onClick={() => handleAddSport('advancedSports', sport)}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                {sport}
+                            </div>
+                            ))}
+                        </div>
+                        )}
+                        <div className="selected-sports">
+                        {formData.advancedSports.map((sport) => (
+                            <span key={sport} className="tag">
+                            {sport}{' '}
+                            <button
+                                type="button"
+                                onClick={() =>
+                                handleRemoveSport('advancedSports', sport)
+                                }
+                            >
+                                ×
+                            </button>
+                            </span>
                         ))}
-                        </select>
+                        </div>
                     </div>
+
+                    {/* INTERMEDIATE SPORTS */}
+                    <div className="form-group">
+                        <label>Intermediate Sports</label>
+                        <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Search and add a sport"
+                        value={intermediateSearch}
+                        onChange={(e) => setIntermediateSearch(e.target.value)}
+                        />
+                        {intermediateSearch && (
+                        <div className="suggestions">
+                            {getFilteredSports(intermediateSearch).map((sport) => (
+                            <div
+                                key={sport}
+                                className="suggestion-item"
+                                onClick={() =>
+                                handleAddSport('intermediateSports', sport)
+                                }
+                                style={{ cursor: 'pointer' }}
+                            >
+                                {sport}
+                            </div>
+                            ))}
+                        </div>
+                        )}
+                        <div className="selected-sports">
+                        {formData.intermediateSports.map((sport) => (
+                            <span key={sport} className="tag">
+                            {sport}{' '}
+                            <button
+                                type="button"
+                                onClick={() =>
+                                handleRemoveSport('intermediateSports', sport)
+                                }
+                            >
+                                ×
+                            </button>
+                            </span>
+                        ))}
+                        </div>
+                    </div>
+
+                    {/* BEGINNER SPORTS */}
+                    <div className="form-group">
+                        <label>Beginner Sports</label>
+                        <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Search and add a sport"
+                        value={beginnerSearch}
+                        onChange={(e) => setBeginnerSearch(e.target.value)}
+                        />
+                        {beginnerSearch && (
+                        <div className="suggestions">
+                            {getFilteredSports(beginnerSearch).map((sport) => (
+                            <div
+                                key={sport}
+                                className="suggestion-item"
+                                onClick={() => handleAddSport('beginnerSports', sport)}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                {sport}
+                            </div>
+                            ))}
+                        </div>
+                        )}
+                        <div className="selected-sports">
+                        {formData.beginnerSports.map((sport) => (
+                            <span key={sport} className="tag">
+                            {sport}{' '}
+                            <button
+                                type="button"
+                                onClick={() =>
+                                handleRemoveSport('beginnerSports', sport)
+                                }
+                            >
+                                ×
+                            </button>
+                            </span>
+                        ))}
+                        </div>
+                    </div>
+
+                    <br />
                     
-                    <br></br>
-          
                         
                     <button type="submit">Sign Up</button>
                 </form>

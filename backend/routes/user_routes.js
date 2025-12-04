@@ -37,8 +37,9 @@ router.route('/signup')
       state,
       city,
       birthday,
-      preferredSports,
-      experience
+      advancedSports,
+      intermediateSports,
+      beginnerSports
     } = req.body;
 
     try {
@@ -55,17 +56,27 @@ router.route('/signup')
       if (!statesCities[newState].includes(newCity)) throw `Invalid city for ${newState}`
       helper.validBday(birthday)
     
-      if (!preferredSports || !Array.isArray(preferredSports) || preferredSports.length === 0) throw "Preferred sports must be a non-empty array";
-      
-      
+      if (!advancedSports || !Array.isArray(advancedSports) || !intermediateSports || !Array.isArray(intermediateSports) || !beginnerSports || !Array.isArray(beginnerSports)) throw "One sports array was not provided.";
+      if((intermediateSports.length + beginnerSports.length + advancedSports.length) === 0) throw "You must select at least one sport.";
+    
+    
 
-      for (const sport of preferredSports) {
+      for (const sport of advancedSports) {
         const newSport = helper.validText(sport)
         if (!sports.includes(newSport)) throw `Invalid sport`;
       }
-      
-      const newExperience = helper.validText(experience, "skill level")
-      if (!skills.includes(newExperience)) throw 'Skill level not listed'
+      for (const sport of intermediateSports) {
+        const newSport = helper.validText(sport)
+        if (!sports.includes(newSport) ) throw `Invalid sport`;
+        if(advancedSports.includes(newSport)) throw 'Sport can not have two categories!';
+      }
+      for (const sport of beginnerSports) {
+        const newSport = helper.validText(sport)
+        if (!sports.includes(newSport)) throw `Invalid sport`;
+        if(advancedSports.includes(newSport)) throw 'Sport can not have two categories!';
+        if(intermediateSports.includes(newSport)) throw 'Sport can not have two categories!';
+      }
+
 
     } catch (e) {
       console.log("Error spotted!!!: " + e);
@@ -85,8 +96,9 @@ router.route('/signup')
         state,
         city,
         birthday,
-        preferredSports,
-        experience
+        advancedSports,
+        intermediateSports,
+        beginnerSports
       );
 
       await client.set(`user_id:${req.params.id}`, JSON.stringify(reg)); 
@@ -140,8 +152,9 @@ router.route('/:id')
       birthday,
       state,
       city,
-      preferredSports,
-      experience
+      advancedSports,
+      intermediateSports,
+      beginnerSports
     } = req.body;
 
     try {
@@ -156,15 +169,27 @@ router.route('/:id')
       if (!statesCities[newState].includes(newCity)) throw `Invalid city for ${newState}`
       helper.validBday(birthday)
     
-      if (!preferredSports || !Array.isArray(preferredSports) || preferredSports.length === 0) throw "Preferred sports must be a non-empty array";
+      if (!advancedSports || !Array.isArray(advancedSports) || !intermediateSports || !Array.isArray(intermediateSports) || !beginnerSports || !Array.isArray(beginnerSports)) throw "One sports array was not provided.";
+      if((intermediateSports.length + beginnerSports.length + advancedSports.length) === 0) throw "You must select at least one sport.";
     
-      for (const sport of preferredSports) {
+      
+      for (const sport of advancedSports) {
         const newSport = helper.validText(sport)
         if (!sports.includes(newSport)) throw `Invalid sport`;
       }
+      for (const sport of intermediateSports) {
+        const newSport = helper.validText(sport)
+        if (!sports.includes(newSport) ) throw `Invalid sport`;
+        if(advancedSports.includes(newSport)) throw 'Sport can not have two categories!';
+      }
+      for (const sport of beginnerSports) {
+        const newSport = helper.validText(sport)
+        if (!sports.includes(newSport)) throw `Invalid sport`;
+        if(advancedSports.includes(newSport)) throw 'Sport can not have two categories!';
+        if(intermediateSports.includes(newSport)) throw 'Sport can not have two categories!';
+      }
     
-      const newExperience = helper.validText(experience, "skill level")
-      if (!skills.includes(newExperience)) throw 'Skill level not listed'
+     
 
     } catch (e) {
       return res.status(400).json({error: e});
@@ -181,8 +206,9 @@ router.route('/:id')
         birthday,
         state,
         city,
-        preferredSports,
-        experience,
+        advancedSports,
+        intermediateSports,
+        beginnerSports,
         req.session.user);
       await client.set(`user_id:${req.params.id}`, JSON.stringify(updatedUser)); 
       await client.del("users")
