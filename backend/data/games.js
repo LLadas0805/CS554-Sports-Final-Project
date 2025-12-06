@@ -200,3 +200,16 @@ export const updateGame = async(
         return newGame;
 
 }
+
+export const getGamesByTeamId = async (teamId) => {
+    teamId = helper.validText(teamId, 'team ID');
+    if (!ObjectId.isValid(teamId)) throw 'invalid object ID';
+    const gameCollection = await games();
+    let gameList = await gameCollection.find({ 
+        $or: [
+            {'team1._id': new ObjectId(teamId)},
+            {'team2._id': new ObjectId(teamId)}
+        ]
+    }).toArray();
+    return gameList;
+}

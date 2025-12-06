@@ -1,8 +1,6 @@
-import redis from 'redis';
 import * as helper from '../helpers.js'
 import {ObjectId} from 'mongodb';
-const client = redis.createClient();
-client.connect().then(() => {});
+import client from '../config/redisClient.js';
 
 export async function cacheGameId(req, res, next) {
     try {
@@ -13,13 +11,13 @@ export async function cacheGameId(req, res, next) {
     }
 
     const cachedGame = await client.get(`game_id:${req.params.id}`);
-    if (!cachedGame) {
-        try {
-            const game = JSON.parse(cachedGame);
-            return res.status(200).json(game);
-        } catch (e) {
-            return res.status(500).json({ error: `Failed to get game`});
-        }
+    if (cachedGame) {
+      try {
+        const game = JSON.parse(cachedGame);
+        return res.status(200).json(game);
+      } catch (e) {
+        return res.status(500).json({ error: `Failed to get game`});
+      }
     }
 
     next(); 

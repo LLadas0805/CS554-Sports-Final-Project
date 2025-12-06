@@ -4,28 +4,28 @@ import express from 'express';
 const app = express();
 import session from 'express-session';
 import configRoutes from './routes/index.js';
-import redis from 'redis';
 import cors from 'cors';
-const client = redis.createClient();
-client.connect().then(() => {});
-
+import client from './config/redisClient.js';
+import http from 'http';
+import wrap from 'express-socket.io-session';
+import { RedisStore } from 'connect-redis';
+import { Server } from 'socket.io';
+import setupSocket from './socket/socket.js';
+import { initIndexes } from './config/indexes.js';
 
 app.use(express.json());
 
-app.use(
-  session({
-    name: 'AuthenticationState',
-    secret: "This is a secret.. shhh don't tell anyone",
-    saveUninitialized: false,
-    resave: false,
-  })
-);
+const sessionMiddleware = session({
+  name: 'AuthenticationState',
+  store: new RedisStore({ client, prefix: 'sess:' }),
+  secret: "...",
+  saveUninitialized: false,
+  resave: false,
+});
 
+app.use(sessionMiddleware);
 
 const rewriteUnsupportedBrowserMethods = (req, res, next) => {
-  // If the user posts to the server with a property called _method, rewrite the request's method
-  // To be that method; so if they post _method=PUT you can now allow browsers to POST to a route that gets
-  // rewritten in this middleware to a PUT route
   if (req.body && req.body._method) {
     req.method = req.body._method;
     delete req.body._method;
@@ -33,20 +33,52 @@ const rewriteUnsupportedBrowserMethods = (req, res, next) => {
   next();
 };
 
-
-
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(rewriteUnsupportedBrowserMethods);
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: "http://localhost:5173",
   credentials: true
 }));
 
 configRoutes(app);
 
-app.listen(3000, () => {
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: { origin: "http://localhost:5173", credentials: true }
+});
+
+io.use(wrap(sessionMiddleware, { autoSave: true }));
+
+io.on("connection", (socket) => {
+  const userId = socket.handshake.session.user?._id;
+  if (!userId) {
+    console.log("Unauthenticated socket tried to connect:", socket.id);
+    socket.disconnect(); 
+    return;
+  }
+
+  socket.userId = userId;
+  console.log("Authenticated user connected:", socket.userId);
+
+  socket.on("chat message", (msg) => {
+    io.emit("chat message", { msg, sender: socket.userId });
+  });
+
+  socket.on("disconnect", () => {
+    console.log(`Client disconnected: ${socket.id}`);
+  });
+
+});
+
+setupSocket(io);
+
+initIndexes();
+
+server.listen(3000, () => {
   console.log("We've now got a server!");
   console.log('Your routes will be running on http://localhost:3000');
-});
+})
+
 

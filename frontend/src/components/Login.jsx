@@ -1,39 +1,42 @@
-import {Link} from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 import React, { useState } from 'react';
 import axios from 'axios';
 
 function Login(props) {
 
-  const defaultData = {
-        username: '',
-        password: '',
-  }
+    const navigate = useNavigate();
 
-  const [formData, setFormData] = useState(defaultData);
+    const defaultData = {
+            username: '',
+            password: '',
+    }
 
-  const handleChange = (e) => {
-        const { name, value } = e.target;
+    const [formData, setFormData] = useState(defaultData);
 
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value
-        }));
-  };
+    const handleChange = (e) => {
+            const { name, value } = e.target;
 
-  const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await axios.post("http://localhost:3000/user/login", formData, { withCredentials: true }, {
-                headers: { "Content-Type": "application/json" }
-            });
-            console.log("Login successful:", response.data);
-            alert("Login successful!");
-            setFormData(defaultData); 
-        } catch (err) {
-            console.error(err.response?.data?.error);
-            alert(err.response?.data?.error || err.message);
-        }
+            setFormData((prev) => ({
+                ...prev,
+                [name]: value
+            }));
     };
+
+    const handleSubmit = async (e) => {
+            e.preventDefault();
+            try {
+                const response = await axios.post("http://localhost:3000/user/login", formData, { withCredentials: true }, {
+                    headers: { "Content-Type": "application/json" }
+                });
+                console.log("Login successful:", response.data);
+                alert("Login successful!");
+                setFormData(defaultData); 
+                navigate(`/users/${response.data._id}`);
+            } catch (err) {
+                console.error(err.response?.data?.error);
+                alert(err.response?.data?.error || err.message);
+            }
+        };
 
  
   return (

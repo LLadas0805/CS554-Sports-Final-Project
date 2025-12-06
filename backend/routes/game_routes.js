@@ -7,9 +7,7 @@ import * as games from '../data/games.js';
 import sports from "../../shared/enums/sports.js";
 import statesCities from '../../shared/data/US_States_and_Cities.json' with { type: 'json' };
 
-import redis from 'redis';
-const client = redis.createClient();
-client.connect().then(() => {});
+import client from '../config/redisClient.js';
 const router = Router();
 
 

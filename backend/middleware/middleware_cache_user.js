@@ -1,10 +1,9 @@
-import redis from 'redis';
 import * as helper from '../helpers.js'
 import {ObjectId} from 'mongodb';
-const client = redis.createClient();
-client.connect().then(() => {});
+import client from '../config/redisClient.js';
 
 export async function cacheUserId(req, res, next) {
+    res.set("Cache-Control", "no-store");
     try {
         helper.validText(req.params.id, 'user ID');
         if (!ObjectId.isValid(req.params.id)) throw 'invalid object ID';
@@ -13,13 +12,13 @@ export async function cacheUserId(req, res, next) {
     }
 
     const cachedUser = await client.get(`user_id:${req.params.id}`);
-    if (!cachedUser) {
-        try {
-            const user = JSON.parse(cachedUser);
-            return res.status(200).json(user);
-        } catch (e) {
-            return res.status(500).json({ error: `Failed to get user`});
-        }
+    if (cachedUser) {
+      try {
+        const user = JSON.parse(cachedUser);
+        return res.status(200).json(user);
+      } catch (e) {
+        return res.status(500).json({ error: `Failed to get user`});
+      }
     }
 
     next(); 

@@ -8,21 +8,31 @@ import sports from "../../shared/enums/sports.js";
 import skills  from "../../shared/enums/skills.js";
 import statesCities from '../../shared/data/US_States_and_Cities.json' with { type: 'json' };
 
-import redis from 'redis';
-const client = redis.createClient();
-client.connect().then(() => {});
+import client from '../config/redisClient.js';
 const router = Router();
 
 router.route('/')
   .get(cacheUsers, async (req, res) => {
     try {
       const userList = await users.getAllUsers();
-      await client.set("users", JSON.stringify(teamList));
+      await client.set("users", JSON.stringify(userList));
       return res.status(200).json(userList);
     } catch (e) {
       return res.status(500).json({ error: `Failed to get users: ${e}` });
     }
   })
+
+router.route('/auth') 
+  .get(async (req, res) => {
+    res.set("Cache-Control", "no-store");
+    if (req.session.user) {
+        return res.status(200).json({
+            loggedIn: true,
+            user: req.session.user
+        });
+    }
+    res.status(200).json({ loggedIn: false });
+})
 
 router.route('/signup')
   .post(accountLogged, async (req, res) => {
@@ -37,8 +47,9 @@ router.route('/signup')
       state,
       city,
       birthday,
-      preferredSports,
-      experience
+      advancedSports,
+      intermediateSports,
+      beginnerSports
     } = req.body;
 
     try {
@@ -55,17 +66,27 @@ router.route('/signup')
       if (!statesCities[newState].includes(newCity)) throw `Invalid city for ${newState}`
       helper.validBday(birthday)
     
-      if (!preferredSports || !Array.isArray(preferredSports) || preferredSports.length === 0) throw "Preferred sports must be a non-empty array";
-      
-      
+      if (!advancedSports || !Array.isArray(advancedSports) || !intermediateSports || !Array.isArray(intermediateSports) || !beginnerSports || !Array.isArray(beginnerSports)) throw "One sports array was not provided.";
+      if((intermediateSports.length + beginnerSports.length + advancedSports.length) === 0) throw "You must select at least one sport.";
+    
+    
 
-      for (const sport of preferredSports) {
+      for (const sport of advancedSports) {
         const newSport = helper.validText(sport)
         if (!sports.includes(newSport)) throw `Invalid sport`;
       }
-      
-      const newExperience = helper.validText(experience, "skill level")
-      if (!skills.includes(newExperience)) throw 'Skill level not listed'
+      for (const sport of intermediateSports) {
+        const newSport = helper.validText(sport)
+        if (!sports.includes(newSport) ) throw `Invalid sport`;
+        if(advancedSports.includes(newSport)) throw 'Sport can not have two categories!';
+      }
+      for (const sport of beginnerSports) {
+        const newSport = helper.validText(sport)
+        if (!sports.includes(newSport)) throw `Invalid sport`;
+        if(advancedSports.includes(newSport)) throw 'Sport can not have two categories!';
+        if(intermediateSports.includes(newSport)) throw 'Sport can not have two categories!';
+      }
+
 
     } catch (e) {
       console.log("Error spotted!!!: " + e);
@@ -85,8 +106,9 @@ router.route('/signup')
         state,
         city,
         birthday,
-        preferredSports,
-        experience
+        advancedSports,
+        intermediateSports,
+        beginnerSports
       );
 
       await client.set(`user_id:${req.params.id}`, JSON.stringify(reg)); 
@@ -99,7 +121,7 @@ router.route('/signup')
     }
   });
 
-router.route('/logout').get(accountVerify, async (req, res) => {
+router.route('/logout').post(accountVerify, async (req, res) => {
   req.session.destroy(e => {
     if (e) {
       return res.status(400).json({error: e});
@@ -108,8 +130,26 @@ router.route('/logout').get(accountVerify, async (req, res) => {
   });
 });
 
+router.route('/filter')
+  .post(accountVerify, async (req, res) => {
+    const {
+      name,
+      distance,
+      skillLevel,
+      sport
+    } = req.body;
+    try {
+      
+      let userList = await users.getUsersByFilters(req.session.user._id.toString(), name, distance, sport, skillLevel)
+      res.status(200).json(userList)
+    } catch (e) {
+      return res.status(500).json({error: `Failed to filter users: ${e}`})
+    }
+  });
+
 router.route('/:id')
   .get(cacheUserId, async (req, res) => {
+    res.set("Cache-Control", "no-store");
     try {
       helper.validText(req.params.id, 'user ID');
       if (!ObjectId.isValid(req.params.id)) throw 'invalid object ID';
@@ -140,8 +180,9 @@ router.route('/:id')
       birthday,
       state,
       city,
-      preferredSports,
-      experience
+      advancedSports,
+      intermediateSports,
+      beginnerSports
     } = req.body;
 
     try {
@@ -156,15 +197,27 @@ router.route('/:id')
       if (!statesCities[newState].includes(newCity)) throw `Invalid city for ${newState}`
       helper.validBday(birthday)
     
-      if (!preferredSports || !Array.isArray(preferredSports) || preferredSports.length === 0) throw "Preferred sports must be a non-empty array";
+      if (!advancedSports || !Array.isArray(advancedSports) || !intermediateSports || !Array.isArray(intermediateSports) || !beginnerSports || !Array.isArray(beginnerSports)) throw "One sports array was not provided.";
+      if((intermediateSports.length + beginnerSports.length + advancedSports.length) === 0) throw "You must select at least one sport.";
     
-      for (const sport of preferredSports) {
+      
+      for (const sport of advancedSports) {
         const newSport = helper.validText(sport)
         if (!sports.includes(newSport)) throw `Invalid sport`;
       }
+      for (const sport of intermediateSports) {
+        const newSport = helper.validText(sport)
+        if (!sports.includes(newSport) ) throw `Invalid sport`;
+        if(advancedSports.includes(newSport)) throw 'Sport can not have two categories!';
+      }
+      for (const sport of beginnerSports) {
+        const newSport = helper.validText(sport)
+        if (!sports.includes(newSport)) throw `Invalid sport`;
+        if(advancedSports.includes(newSport)) throw 'Sport can not have two categories!';
+        if(intermediateSports.includes(newSport)) throw 'Sport can not have two categories!';
+      }
     
-      const newExperience = helper.validText(experience, "skill level")
-      if (!skills.includes(newExperience)) throw 'Skill level not listed'
+     
 
     } catch (e) {
       return res.status(400).json({error: e});
@@ -181,8 +234,9 @@ router.route('/:id')
         birthday,
         state,
         city,
-        preferredSports,
-        experience,
+        advancedSports,
+        intermediateSports,
+        beginnerSports,
         req.session.user);
       await client.set(`user_id:${req.params.id}`, JSON.stringify(updatedUser)); 
       await client.del("users")
@@ -212,9 +266,10 @@ router.route('/:id')
           return res.status(400).json({error: e});
         }
       });
+      req.session.save();
       await client.del(`user_id:${req.params.id}`);
       await client.del("users")
-      return res.json(deleteUser);
+      return res.status(200).json(deleteUser);
     } catch (e) {
       if (e === 'user not found') {
         res.status(404).json({error: `Failed to delete user: ${e}`})
@@ -245,6 +300,7 @@ router.route('/login')
     try {
       const signin = await users.login(username, password);
       req.session.user = {_id: signin._id, username: signin.username};
+      req.session.save();
       console.log(req.session.user);
       return res.status(200).json(signin)
     } catch (e) {

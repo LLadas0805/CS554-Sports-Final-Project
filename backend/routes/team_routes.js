@@ -8,9 +8,7 @@ import sports from "../../shared/enums/sports.js";
 import skills  from "../../shared/enums/skills.js";
 import statesCities from '../../shared/data/US_States_and_Cities.json' with { type: 'json' };
 
-import redis from 'redis';
-const client = redis.createClient();
-client.connect().then(() => {});
+import client from '../config/redisClient.js';
 const router = Router();
 
 router.route('/')
@@ -79,6 +77,22 @@ router.route('/create')
       
     } catch (e) {
       return res.status(500).json({error: `Failed to create team: ${e}`})
+    }
+  });
+
+router.route('/filter')
+  .post(accountVerify, async (req, res) => {
+    const {
+      name,
+      distance,
+      skillLevel,
+      sport
+    } = req.body;
+    try {
+      let teams = await teams.getTeamsByFilters(req.session.user._id, name, distance, sport, skillLevel)
+      res.status(200).json(teams)
+    } catch (e) {
+      return res.status(500).json({error: `Failed to filter teams: ${e}`})
     }
   });
 

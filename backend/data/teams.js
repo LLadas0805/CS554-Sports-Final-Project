@@ -70,7 +70,7 @@ export const createTeam = async (
 
     return {
         _id: teamInsert.insertedId,
-        username: newTeam.teamName,
+        teamName: newTeam.teamName,
         description: newTeam.description,
         owner: newTeam.owner,
         state: newTeam.state,
@@ -102,6 +102,66 @@ export const getAllTeams = async () => {
     return teamList;
 };
 
+export const getTeamsByFilters = async (userId, name, distance, sport, skillLevel = "") => {
+    
+    const teamCollection = await teams();
+    const userCollection = await users()
+    const user = await userCollection.findOne({ _id: new ObjectId(userId) });
+    if (!user) throw 'User not found';
+
+    const [lon, lat] = team.location.coordinates;
+    const distanceMeters = distance ? distance * 1609.34 : undefined;
+
+    const andConditions = [];
+
+    // Skill Level
+    if (skillLevel) {
+        const newSkillLevel = helper.validText(skillLevel, "skill level");
+        if (!skills.includes(newSkillLevel)) throw 'Skill level not listed';
+        andConditions.push({ skillLevel: newSkillLevel });
+    }
+
+    // Sport
+    if (sport) {
+        const newSport = helper.validText(sport, "sport");
+        if (!sports.includes(newSport)) throw 'Invalid sport';
+        andConditions.push({ preferredSports: newSport }); 
+    }
+
+    // Name
+    if (name) {
+        const newName = helper.validText(name, "team name");
+        andConditions.push({ teamName: { $regex: newName, $options: "i" } });
+    }
+
+    // Base query: exclude self
+    const query = { _id: { $ne: new ObjectId(teamId) } };
+    if (andConditions.length) query.$and = andConditions;
+
+    // Distance
+    if (distanceMeters) {
+        query.location = {
+            $near: {
+                $geometry: { type: "Point", coordinates: [lon, lat] },
+                $maxDistance: distanceMeters
+            }
+        };
+    }
+
+    const teamList = await teamCollection.find(query).toArray();
+    return teamList;
+
+};
+
+export const getTeamByOwnerId = async (ownerId) => {
+    ownerId = helper.validText(ownerId, 'owner ID');
+    if (!ObjectId.isValid(ownerId)) throw 'invalid object ID';
+
+    const teamCollection = await teams();
+    const team = await teamCollection.findOne({owner: new ObjectId(ownerId)});
+    if (!team) throw 'No team with that owner id';
+    return team
+}
 export const updateTeam = async(
     teamId,
     name,

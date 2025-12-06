@@ -1,11 +1,12 @@
-import {Link} from 'react-router-dom';
+import {Link, useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
 import statesCities from '../../../shared/data/US_States_and_Cities.json' with { type: 'json' };
 import sports from '../../../shared/enums/sports.js';
 import axios from 'axios';
-import skills from '../../../shared/enums/skills.js';
 
 function Signup(props) {
+    const navigate = useNavigate();
+
     const defaultData = {
         username: '',
         firstName: '',
@@ -17,11 +18,13 @@ function Signup(props) {
         state: '',
         city: '',
         birthday: '',
-        preferredSports: [],
-        experience: ''
+        advancedSports: [],
+        intermediateSports: [],
+        beginnerSports: []
     }
 
     const [formData, setFormData] = useState(defaultData);
+    const [advancedSearch, setAdvancedSearch] = useState('');
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -33,21 +36,29 @@ function Signup(props) {
     };
 
     
-    const handleSportsChange = (e) => {
-        const value = e.target.value;
-
+    const handleAddSport = (level, sportName) => {
         setFormData((prev) => {
-            const currentSports = Array.isArray(prev.preferredSports) ? prev.preferredSports : [];
-
-            const alreadySelected = currentSports.includes(value);
+            const currentList = prev[level] || [];
+            if (currentList.includes(sportName)) return prev; // avoid duplicates
 
             return {
             ...prev,
-            preferredSports: alreadySelected
-                ? currentSports.filter((s) => s !== value) 
-                : [...currentSports, value]               
+            [level]: [...currentList, sportName]
             };
         });
+
+        // clear search box for advanced level
+        if (level === 'advancedSports') {
+            setAdvancedSearch('');
+        }
+    };
+
+    
+    const handleRemoveSport = (level, sportName) => {
+        setFormData((prev) => ({
+        ...prev,
+        [level]: prev[level].filter((s) => s !== sportName)
+        }));
     };
 
 
@@ -70,6 +81,7 @@ function Signup(props) {
             console.log("Signup successful:", response.data);
             alert("Signup successful!");
             setFormData(defaultData); 
+            navigate('/login');
         } catch (err) {
             console.error(err.response?.data?.error);
             alert(err.response?.data?.error || err.message);
@@ -217,45 +229,113 @@ function Signup(props) {
                         </select>
                     </div>
                     <br></br>
+                    {/* ADVANCED SPORTS */}
                     <div className="form-group">
-                        <label>Preferred Sports</label>
-
-                        {sports.map((sport) => (
-                        <div key={sport}>
-                            <label>
-                            <input
-                                type="checkbox"
-                                name="sports"
-                                value={sport}
-                                checked={Array.isArray(formData.preferredSports) && formData.preferredSports.includes(sport)}
-                                onChange={handleSportsChange}
-                            />
-                            {sport}
-                            </label>
-                        </div>
-                        ))}
-                    </div>
-                    <br></br>
-                    <div className="form-group">
-                        <label htmlFor="experience">Experience</label>
+                        <label>Advanced Sports</label>
                         <select
-                        id="experience"
-                        name="experience"
-                        value={formData.experience}
-                        onChange={handleChange}
+                        id="advancedSports"
+                        name="advancedSports"
+                        value={advancedSearch}
+                        onChange={(e) => handleAddSport('advancedSports', e.target.value)}
                         className="form-input"
                         >
-                        <option value="">Select a skill level</option>
-                        {skills.map((skill) => (
-                            <option key={skill} value={skill}>
-                            {skill}
+                        <option value="">Select a sport</option>
+                        {sports.map((sport) => (
+                            <option key={sport} value={sport}>
+                            {sport}
                             </option>
                         ))}
                         </select>
+                        <div className="selected-sports">
+                        {formData.advancedSports.map((sport) => (
+                            <span key={sport} className="tag">
+                            
+                            <button
+                                className = "sports-buttons"
+                                type="button"
+                                onClick={() =>
+                                handleRemoveSport('advancedSports', sport)
+                                }
+                            >
+                                • {sport}
+                            </button>
+                            </span>
+                        ))}
+                        </div>
                     </div>
+
+                    {/* INTERMEDIATE SPORTS */}
+                    <div className="form-group">
+                        <label>Intermediate Sports</label>
+                        <select
+                        id="intermediateSports"
+                        name="intermediateSports"
+                        value={advancedSearch}
+                        onChange={(e) => handleAddSport('intermediateSports', e.target.value)}
+                        className="form-input"
+                        >
+                        <option value="">Select a sport</option>
+                        {sports.map((sport) => (
+                            <option key={sport} value={sport}>
+                            {sport}
+                            </option>
+                        ))}
+                        </select>
+                        <div className="selected-sports">
+                        {formData.intermediateSports.map((sport) => (
+                            <span key={sport} className="tag">
+                            
+                            <button
+                                className = "sports-buttons"
+                                type="button"
+                                onClick={() =>
+                                handleRemoveSport('intermediateSports', sport)
+                                }
+                            >
+                                • {sport}
+                            </button>
+                            </span>
+                        ))}
+                        </div>
+                    </div>
+
+                    {/* BEGINNER SPORTS */}
+                    <div className="form-group">
+                        <label>Beginner Sports</label>
+                        <select
+                        id="beginnerSports"
+                        name="beginnerSports"
+                        value={advancedSearch}
+                        onChange={(e) => handleAddSport('beginnerSports', e.target.value)}
+                        className="form-input"
+                        >
+                        <option value="">Select a sport</option>
+                        {sports.map((sport) => (
+                            <option key={sport} value={sport}>
+                            {sport}
+                            </option>
+                        ))}
+                        </select>
+                        <div className="selected-sports">
+                        {formData.beginnerSports.map((sport) => (
+                            <span key={sport} className="tag">
+                            
+                            <button
+                                className = "sports-buttons"
+                                type="button"
+                                onClick={() =>
+                                handleRemoveSport('beginnerSports', sport)
+                                }
+                            >
+                                • {sport} 
+                            </button>
+                            </span>
+                        ))}
+                        </div>
+                    </div>
+
+                    <br />
                     
-                    <br></br>
-          
                         
                     <button type="submit">Sign Up</button>
                 </form>

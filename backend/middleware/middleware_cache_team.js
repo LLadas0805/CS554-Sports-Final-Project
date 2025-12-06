@@ -1,8 +1,6 @@
-import redis from 'redis';
 import * as helper from '../helpers.js'
 import {ObjectId} from 'mongodb';
-const client = redis.createClient();
-client.connect().then(() => {});
+import client from '../config/redisClient.js';
 
 export async function cacheTeamId(req, res, next) {
     try {
@@ -13,13 +11,13 @@ export async function cacheTeamId(req, res, next) {
     }
 
     const cachedTeam = await client.get(`team_id:${req.params.id}`);
-    if (!cachedTeam) {
-        try {
-            const team = JSON.parse(cachedTeam);
-            return res.status(200).json(team);
-        } catch (e) {
-            return res.status(500).json({ error: `Failed to get team`});
-        }
+    if (cachedTeam) {
+      try {
+        const team = JSON.parse(cachedTeam);
+        return res.status(200).json(team);
+      } catch (e) {
+        return res.status(500).json({ error: `Failed to get team`});
+      }
     }
 
     next(); 

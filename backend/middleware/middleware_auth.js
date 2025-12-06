@@ -7,7 +7,7 @@ export function accountVerify(req, res, next) {
 
 export function accountLogged(req, res, next) {
   if (req.session.user) {
-    return res.status(400).json({ error: "User is already logged in" });
+    return res.status(409).json({ error: "User is already logged in" });
   }
   next(); 
 }
