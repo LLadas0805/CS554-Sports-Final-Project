@@ -162,6 +162,19 @@ export const getTeamByOwnerId = async (ownerId) => {
     if (!team) throw 'No team with that owner id';
     return team
 }
+
+export const getTeamsByMemberId = async (memberId) => {
+    memberId = helper.validText(memberId, 'user ID');
+    if (!ObjectId.isValid(memberId)) throw 'invalid object ID';
+
+    const teamCollection = await teams();
+    const teamList = await teamCollection.find({
+        "members.userId": new ObjectId(memberId)
+    }).toArray();
+
+    return teamList
+}
+
 export const updateTeam = async(
     teamId,
     name,

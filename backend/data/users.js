@@ -245,8 +245,6 @@ export const updateUser = async(
     const newFirstName = helper.validName(firstName, "First");
     const newLastName = helper.validName(lastName, "Last");
     const newUserName = helper.validUsername(username);
-    const newPassword = helper.validPassword(password);
-    helper.matchingPassword(newPassword, confirmPassword);
     const newEmail = helper.validEmail(email);
     const newNumber = helper.validNumber(phoneNumber)
     const newState = helper.validText(state, "state")
@@ -280,6 +278,7 @@ export const updateUser = async(
 
     const userCollection = await users();
     const existingUser = await userCollection.findOne({ 
+      _id: { $ne: new ObjectId(userId)} ,
       $or: [
         { username: { $regex: `^${newUserName}$`, $options: "i" } },
         { phoneNumber: { $regex: `^${newNumber}$`, $options: "i" } },

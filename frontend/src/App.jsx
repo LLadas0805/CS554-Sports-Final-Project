@@ -5,6 +5,7 @@ import Login from "./components/Login"
 import NotFound from './components/NotFound';
 import User from './components/User'
 import UserList from './components/UserList'
+import UserEdit from './components/UserEdit'
 import {Route, Link, Routes} from 'react-router-dom';
 
 const App = () => {
@@ -16,7 +17,9 @@ const App = () => {
         <Route path='/login' element={<Login />} />
         <Route path='/users' element={<UserList/>}/>
         <Route path='/users/:id' element={<User/>}/>
+        <Route path='users/edit/:id' element={<UserEdit/>}/>
         <Route path="*" element={<NotFound />} />
+        
       </Routes>
     </div>
   );

@@ -1,4 +1,4 @@
-import {teams, users} from '../config/mongoCollections.js';
+import {teams} from '../config/mongoCollections.js';
 import {ObjectId} from 'mongodb';
 
 export default function setupTeam(io) {

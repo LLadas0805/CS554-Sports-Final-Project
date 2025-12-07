@@ -8,17 +8,19 @@ function Home(props) {
   // Use this for loading certain elements like team invites/edit/delete
   const [logged, setLogged] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loggedId, setLoggedId] = useState(null)
 
   useEffect(() => {
     async function fetchData() {
       try {
 
-        const {data} = await axios.get("http://localhost:3000/user/auth", {
+        let {data} = await axios.get("http://localhost:3000/user/auth", {
             withCredentials: true
         });
-
         if (data.loggedIn) {
-            setLogged(true);
+          setLoggedId(data.user._id)
+          setLogged(true);
+          
         } else {
             setLogged(false)
         }
@@ -62,6 +64,9 @@ function Home(props) {
 
             {logged ? (
                 <div className="pages">
+                    <Link className='link' to={`/users/${loggedId}`}>
+                        Go to Profile
+                    </Link>
                     <Link className='link' to={`/users/`}>
                         View Users
                     </Link>

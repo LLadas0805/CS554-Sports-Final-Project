@@ -5,6 +5,7 @@ import {Link, useParams, useNavigate} from 'react-router-dom';
 
 const User = (props) => {
   const [userData, setUserData] = useState(undefined);
+  const [teamsData, setTeamsData] = useState([])
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   // Use this for loading certain elements like team invites/edit/delete
@@ -28,7 +29,11 @@ const User = (props) => {
             withCredentials: true
         });
 
-        console.log(loggedData);
+        const {data: teams} = await axios.get(`http://localhost:3000/team/members/${id}`, {
+            withCredentials: true
+        });
+
+        setTeamsData(teams);
 
         if (loggedData.loggedIn && loggedData.user._id === id) {
             setLogged(true);
@@ -106,7 +111,22 @@ const User = (props) => {
                 ? userData.beginnerSports.join(", ")
                 : "None listed"}
             </p>
-
+            <h2>Current Teams:</h2>
+            <div className="items-container">
+                {teamsData.length === 0 ? (
+                    <h3>None</h3>
+                ) : (
+                    teamsData.map((team) => (
+                        <GenericItem
+                            key={team._id}
+                            name={team.teamName}
+                            subtext={`${team.description}`}
+                            additional={team.owner === userData._id ? "Owner" : "Member"}
+                            link={`/teams/${team._id}`}
+                        />
+                    ))
+                )}
+            </div>
             {logged && (
                 <div className = "pages">
                     <Link className='link' to={`/users/edit/${id}`}>
