@@ -182,7 +182,7 @@ const seedTeams = [
 const seedGames = [
   {
     team1: { _id: CA_TEAM_ID, score: 72 },
-    team2: { _id: new ObjectId(BILLY_TEAM_ID), score: 65 },
+    team2: { _id: new ObjectId(TX_TEAM_ID), score: 65 },
     sport: "Basketball",
     state: "CA",
     city: "San Francisco",
@@ -195,7 +195,7 @@ const seedGames = [
 
   {
     team1: { _id: NY_TEAM_ID, score: 3 },
-    team2: { _id: new ObjectId(MARIA_TEAM_ID), score: 2 },
+    team2: { _id: new ObjectId(IL_TEAM_ID), score: 2 },
     sport: "Soccer",
     state: "NY",
     city: "New York",
@@ -206,7 +206,7 @@ const seedGames = [
 
   {
     team1: { _id: TX_TEAM_ID, score: 21 },
-    team2: { _id: new ObjectId(AIDEN_TEAM_ID), score: 18 },
+    team2: { _id: new ObjectId(IL_TEAM_ID), score: 18 },
     sport: "Badminton",
     state: "TX",
     city: "Austin",
@@ -216,8 +216,8 @@ const seedGames = [
   },
 
   {
-    team1: { _id: new ObjectId(AIDEN_TEAM_ID), score: 10 },
-    team2: { _id: new ObjectId(LUKE_TEAM_ID), score: 8 },
+    team1: { _id: new ObjectId(IL_TEAM_ID), score: 10 },
+    team2: { _id: new ObjectId(NY_TEAM_ID), score: 8 },
     sport: "Ultimate Frisbee",
     state: "IL",
     city: "Chicago",
@@ -227,7 +227,7 @@ const seedGames = [
   }
 ];
 
-const run = async () => {
+const seed = async () => {
   try {
     await dbConnection();
     const userCollection = await users();
@@ -256,4 +256,4 @@ const run = async () => {
   }
 };
 
-run();
+seed();
