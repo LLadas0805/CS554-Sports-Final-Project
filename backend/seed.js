@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
-
+import bcrypt from 'bcrypt';
 import { dbConnection, closeConnection } from './config/mongoConnection.js';
 import { users, teams, games } from './config/mongoCollections.js';
 import { ObjectId } from 'mongodb';
@@ -12,6 +12,10 @@ const AIDEN_ID = new ObjectId();
 const SOPHIA_ID = new ObjectId();
 const RAJ_ID = new ObjectId();
 
+const saltRounds = 16;
+const hashedPassword = await bcrypt.hash('password', saltRounds);
+
+
 const seedUsers = [
   {
     _id: LUKE_ID,
@@ -20,7 +24,7 @@ const seedUsers = [
     lastName: 'Sky',
     email: 'luke@example.com',
     phoneNumber: '1234567890',
-    password: 'password',
+    password: hashedPassword,
     state: 'CA',
     city: 'San Francisco',
     birthday: '1990-01-01',
@@ -36,7 +40,7 @@ const seedUsers = [
     lastName: 'Bean',
     email: 'billy@example.com',
     phoneNumber: '0987654321',
-    password: 'password',
+    password: hashedPassword,
     state: 'NY',
     city: 'New York',
     birthday: '1992-02-02',
@@ -52,7 +56,7 @@ const seedUsers = [
     lastName: 'Gonzalez',
     email: 'maria@example.com',
     phoneNumber: '5551112222',
-    password: 'password',
+    password: hashedPassword,
     state: 'TX',
     city: 'Austin',
     birthday: '1988-03-15',
@@ -68,7 +72,7 @@ const seedUsers = [
     lastName: 'Jones',
     email: 'aiden@example.com',
     phoneNumber: '5552223333',
-    password: 'password',
+    password: hashedPassword,
     state: 'IL',
     city: 'Chicago',
     birthday: '1995-07-10',
@@ -84,7 +88,7 @@ const seedUsers = [
     lastName: 'Lee',
     email: 'sophia@example.com',
     phoneNumber: '5553334444',
-    password: 'password',
+    password: hashedPassword,
     state: 'WA',
     city: 'Seattle',
     birthday: '1993-11-22',
@@ -100,7 +104,7 @@ const seedUsers = [
     lastName: 'Patel',
     email: 'raj@example.com',
     phoneNumber: '5554445555',
-    password: 'password',
+    password: hashedPassword,
     state: 'NJ',
     city: 'Jersey City',
     birthday: '1991-05-05',
