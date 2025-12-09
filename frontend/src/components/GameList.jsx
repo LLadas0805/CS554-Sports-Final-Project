@@ -16,7 +16,7 @@ const styles = {
     width: '150px',
   },
   actions: {
-    width: '200px',
+    width: '260px',
   },
 }
 
@@ -152,7 +152,13 @@ const GameList = (props) => {
                     <div style={styles.actions}>
                       <button
                         className="btn btn-primary"
-                        style={{ backgroundColor: '#1890ff', color: 'white', marginRight: '10px' }}
+                        style={{ backgroundColor: '#f9f9f9', marginRight: '6px' }}
+                        onClick={() => navigate(`/games/${game._id}`)}>
+                        Detail
+                      </button>
+                      <button
+                        className="btn btn-primary"
+                        style={{ backgroundColor: '#1890ff', color: 'white', marginRight: '6px' }}
                         onClick={() => navigate(`/games/edit/${game._id}`)}>
                         Edit
                       </button>

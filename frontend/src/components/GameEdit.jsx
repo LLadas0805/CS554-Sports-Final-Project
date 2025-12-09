@@ -7,8 +7,6 @@ import axios from 'axios';
 function GameEdit() {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    // Use this for loading certain elements like team invites/edit/delete
-    const [logged, setLogged] = useState(false);
     const [formData, setFormData] = useState({
         team1Id: "",
         team2Id: "",
