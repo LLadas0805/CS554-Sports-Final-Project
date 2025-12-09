@@ -36,9 +36,6 @@ const Team = (props) => {
         const {data: loggedData} = await axios.get("http://localhost:3000/user/auth", {
             withCredentials: true
         });
-
-
-
         if (loggedData.loggedIn) {
             setAuthUser(loggedData.user);
         } else {
@@ -77,8 +74,8 @@ const isOwner = (() => {
   ]
     .filter(Boolean)
     .map(String);
-
-  return possibleOwnerIds.includes(String(authUser._id));
+  console.log(teamData.owner, authUser._id)
+  return teamData.owner === authUser._id;
 })();
 
   async function handleJoinRequest() {
@@ -165,10 +162,7 @@ const isOwner = (() => {
           </h2>
         </div>
 
-        <h2 className="tag">Skill Level:</h2>
-        <div className="row">
-          <h3 className="tag">{experience}</h3>
-        </div>
+        <h2 className="tag">Skill Level: {experience}</h2>
 
         <h2>Preferred Sports:</h2>
         <p>
@@ -180,7 +174,6 @@ const isOwner = (() => {
         {message && <p className="success">{message}</p>}
         {error && <p className="error">{error}</p>}
 
-        
         {logged && !isOwner && (
           <button className="btn btn-primary" onClick={handleJoinRequest}>
             Request to Join Team

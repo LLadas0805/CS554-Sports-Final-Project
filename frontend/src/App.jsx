@@ -4,6 +4,7 @@ import Signup from "./components/Signup";
 import Login from "./components/Login";
 import NotFound from './components/NotFound';
 import User from './components/User';
+import UserEdit from './components/UserEdit';
 import UserList from './components/UserList';
 import TeamList from './components/TeamList';
 import Team from './components/Team';
@@ -22,6 +23,7 @@ const App = () => {
         <Route path='/login' element={<Login />} />
         <Route path='/users' element={<UserList/>}/>
         <Route path='/users/:id' element={<User/>}/>
+        <Route path ='users/edit/:id/' element={<UserEdit/>}/>
         <Route path="/teams" element={<TeamList />} />
         <Route path="/teams/new" element={<TeamForm mode="create" />} />
         <Route path="/teams/:id" element={<Team />} />
