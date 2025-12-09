@@ -112,10 +112,16 @@ export const register = async (
 };
 
 export const login = async (username, password) => {
-
-    helper.validUsername(username);
-    const newPassword = helper.validPassword(password);
-
+  
+    if (typeof username !== 'string' || username.trim().length === 0) {
+        throw 'Username must be provided';
+    }
+    if (typeof password !== 'string' || password.trim().length === 0) {
+      throw 'Password must be provided';
+    }
+    username = username.trim();
+    const newPassword = password.trim();
+    
     const userCollection = await users();
     let user = await userCollection.findOne({username:{$regex:`^${username}$`,$options:'i'} });
     if (!user || user === null) throw 'Either the username or password is invalid';
@@ -399,7 +405,7 @@ export const removeTeamInvite = async (userId, teamId) => {
     const teamCollection = await teams();
 
     const user = await userCollection.findOne({ _id: new ObjectId(userId) });
-    if (user) throw 'User not found';
+    if (!user) throw 'User not found';
 
     const team = await teamCollection.findOne({ _id: new ObjectId(teamId) });
     if (!team) throw 'Team not found';
@@ -408,8 +414,47 @@ export const removeTeamInvite = async (userId, teamId) => {
     
     await userCollection.updateOne(
         { _id: new ObjectId(userId) },
-        { $pull: { teamInvites: { teamId: new ObjectId(teamId), requestedAt: new Date() } } }
+        { $pull: { teamInvites: { teamId: new ObjectId(teamId) } } }
     );
 
     return { removed: userId, teamId };
+};
+
+export const acceptTeamInvite = async (userId, teamId) => {
+  userId = helper.validText(userId, 'user ID');
+  teamId = helper.validText(teamId, 'team ID');
+
+  if (!ObjectId.isValid(userId)) throw 'Invalid user ID';
+  if (!ObjectId.isValid(teamId)) throw 'Invalid team ID';
+
+  const userCollection = await users();
+  const teamCollection = await teams();
+
+  const userObjectId = new ObjectId(userId);
+  const teamObjectId = new ObjectId(teamId);
+
+  const user = await userCollection.findOne({ _id: userObjectId });
+  if (!user) throw 'User not found';
+
+  const team = await teamCollection.findOne({ _id: teamObjectId });
+  if (!team) throw 'Team not found';
+
+  if (
+    !user.teamInvites ||
+    !user.teamInvites.some((inv) => inv.teamId.toString() === teamId.toString())
+  ) {
+    throw 'No invite from this team';
+  }
+
+  await teamCollection.updateOne(
+    { _id: teamObjectId },
+    { $addToSet: { members: userObjectId } }
+  );
+
+  await userCollection.updateOne(
+    { _id: userObjectId },
+    { $pull: { teamInvites: { teamId: teamObjectId } } }
+  );
+
+  return { accepted: true };
 };

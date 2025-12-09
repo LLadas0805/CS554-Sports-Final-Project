@@ -34,8 +34,6 @@ router.route('/create')
     } = req.body;
 
     try {
-     
-        if (!ObjectId.isValid(req.params.id)) throw 'invalid object ID';
 
         helper.validTeam(name);
 
@@ -44,8 +42,8 @@ router.route('/create')
         helper.validText(city, "city")
         if (!statesCities[state].includes(city)) throw `Invalid city for ${state}`
         
-        description = helper.validText(description, 'description')
-        if (description.length < 10 || description.length > 500) throw 'description length has to be at least 10 or no more than 500 characters'
+        const ndescription = helper.validText(description, 'description')
+        if (ndescription.length < 10 || ndescription.length > 500) throw 'description length has to be at least 10 or no more than 500 characters'
         if (!preferredSports || !Array.isArray(preferredSports) || preferredSports.length === 0) throw "Must include at least one sport!";
 
         for (const sport of preferredSports) {
@@ -54,11 +52,22 @@ router.route('/create')
         }
 
         helper.validText(experience, "skill level")
-        if (!skills.includes(experience)) throw 'Skill level not listed'
 
     } catch (e) {
-      return res.status(400).json({error: e});
+      console.error('team/create validation error:', e);
+
+      const msg =
+        typeof e === 'string'
+          ? e
+          : e?.message
+          ? e.message
+          : e?.toString
+          ? e.toString()
+          : 'Unknown validation error';
+
+      return res.status(400).json({ error: msg });
     }
+
     
     try {
       const team = await teams.createTeam(

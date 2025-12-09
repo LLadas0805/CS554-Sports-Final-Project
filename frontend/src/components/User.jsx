@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import NotFound from './NotFound';
+import GenericItem from './GenericItem';
 import axios from 'axios';
 import {Link, useParams, useNavigate} from 'react-router-dom';
 

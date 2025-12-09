@@ -74,12 +74,11 @@ export const createGame = async (
 
     return {
         team1: gameInsert.team1,
-        username: gameInsert.team2,
+        team2: gameInsert.team2,
         state: gameInsert.state,
         city: gameInsert.city,
         sport: gameInsert.sport,
     };
-
 };
 
 export const getGameById = async (gameId) => {
