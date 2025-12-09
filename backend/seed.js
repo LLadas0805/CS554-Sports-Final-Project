@@ -223,7 +223,7 @@ const seedGames = [
     team1: { _id: new ObjectId(IL_TEAM_ID), score: 10 },
     team2: { _id: new ObjectId(NY_TEAM_ID), score: 8 },
     sport: "Ultimate Frisbee",
-    state: "IL",
+    state: "Illinois",
     city: "Chicago",
     location: { type: "Point", coordinates: [-87.6298, 41.8781] },
     date: new Date("2025-04-01T15:00:00"),
