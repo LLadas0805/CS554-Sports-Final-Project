@@ -139,8 +139,12 @@ router.route('/filter')
       sport
     } = req.body;
     try {
-      
-      let userList = await users.getUsersByFilters(req.session.user._id.toString(), name, distance, sport, skillLevel)
+      const distances = {close: 15, moderate: 30, far: 100}
+      let distanceVal = null;
+      if (distance !== "") {
+        distanceVal = distances[distance];
+      }
+      let userList = await users.getUsersByFilters(req.session.user._id.toString(), name, distanceVal, sport, skillLevel)
       res.status(200).json(userList)
     } catch (e) {
       return res.status(500).json({error: `Failed to filter users: ${e}`})
@@ -287,15 +291,6 @@ router.route('/login')
       username,
       password,
     } = req.body
-
-    try {
-
-      helper.validUsername(username);
-      helper.validPassword(password);
-    
-    } catch (e) {
-      return res.status(400).json({error: e});
-    }
 
     try {
       const signin = await users.login(username, password);

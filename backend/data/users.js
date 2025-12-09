@@ -113,14 +113,11 @@ export const register = async (
 
 export const login = async (username, password) => {
 
-    helper.validUsername(username);
-    const newPassword = helper.validPassword(password);
-
     const userCollection = await users();
     let user = await userCollection.findOne({username:{$regex:`^${username}$`,$options:'i'} });
     if (!user || user === null) throw 'Either the username or password is invalid';
 
-    const comparePassword = await bcrypt.compare(newPassword, user.password);
+    const comparePassword = await bcrypt.compare(password, user.password);
     if (!comparePassword) throw 'Either the username or password is invalid';
 
     return {_id: user._id, name: user.name,

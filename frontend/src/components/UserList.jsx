@@ -88,10 +88,9 @@ const UserList = () => {
                         className="form-input"
                     >
                         <option value="">Enter a distance range</option>
-                        <option value="veryClose">Very Close (0-5 miles)</option>
-                        <option value="close">Close (5-15 miles)</option>
+                        <option value="close">Close (0-15 miles)</option>
                         <option value="moderate">Moderate (15-30 miles)</option>
-                        <option value="far">Far (30-50 miles)</option>
+                        <option value="far">Far (30-100 miles)</option>
                     </select>
                     </div>
 

@@ -9,6 +9,9 @@ import TeamList from './components/TeamList';
 import Team from './components/Team';
 import TeamForm from './components/TeamForm';
 import {Route, Link, Routes} from 'react-router-dom';
+import Game from './components/Game.jsx'
+import GameEdit from './components/GameEdit.jsx'
+import GameList from './components/GameList.jsx'
 
 const App = () => {
   return (
@@ -23,6 +26,10 @@ const App = () => {
         <Route path="/teams/new" element={<TeamForm mode="create" />} />
         <Route path="/teams/:id" element={<Team />} />
         <Route path="/teams/:id/edit" element={<TeamForm mode="edit" />} />
+        <Route path='/games' element={<GameList/>}/>
+        <Route path='/games/:id' element={<Game/>}/>
+        <Route path='/games/add' element={<GameEdit/>}/>
+        <Route path='/games/edit/:id' element={<GameEdit/>}/>
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>
