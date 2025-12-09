@@ -19,7 +19,7 @@ const hashedPassword = await bcrypt.hash('password', saltRounds);
 const seedUsers = [
   {
     _id: LUKE_ID,
-    username: 'skywalker_luke',
+    username: 'skywalkerluke',
     firstName: 'Luke',
     lastName: 'Sky',
     email: 'luke@example.com',
@@ -99,7 +99,7 @@ const seedUsers = [
   },
   {
     _id: RAJ_ID,
-    username: 'raj_patel',
+    username: 'rajpatel',
     firstName: 'Raj',
     lastName: 'Patel',
     email: 'raj@example.com',

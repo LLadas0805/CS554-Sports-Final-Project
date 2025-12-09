@@ -288,6 +288,22 @@ router.route('/members/:teamId/:memberId')
         }
     });
 
+router.route('/members/:memberId') 
+  .get(async(req, res) => {
+    try {
+        helper.validText(req.params.memberId, 'member ID');
+        if (!ObjectId.isValid(req.params.memberId)) throw 'invalid object ID';   
+    } catch (e) {
+        return res.status(400).json({error: e});
+    }
+    try {
+        const result = await teams.getTeamsByMemberId(req.params.memberId);
+        res.status(200).json(result);
+    } catch (e) {
+        res.status(500).json({error: `Failed to find teams`})
+    }
+  })
+
 router.route('/requests/:teamId/:userId')
     .post(accountVerify, async(req, res) => {
         try {

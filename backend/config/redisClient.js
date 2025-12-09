@@ -11,6 +11,7 @@ client.on('error', (err) => {
 (async () => {
   try {
     await client.connect();
+    // Delete this to save cache on restart
     await client.flushAll();
     console.log('Connected to Redis at', REDIS_URL);
   } catch (e) {
