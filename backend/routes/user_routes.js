@@ -151,6 +151,22 @@ router.route('/filter')
     }
   });
 
+router.route('/invites')
+  .get(accountVerify, async (req, res) => {
+    try {
+      const sessionUser = req.session.user;
+      if (!sessionUser || !sessionUser._id) {
+        return res.status(401).json({ error: 'Not logged in' });
+      }
+
+      const invites = await users.getPendingTeamInvites(sessionUser._id.toString());
+      return res.status(200).json(invites);
+    } catch (e) {
+      console.error(e);
+      return res.status(500).json({ error: `Failed to get invites: ${e}` });
+    }
+  });
+
 router.route('/:id')
   .get(cacheUserId, async (req, res) => {
     res.set("Cache-Control", "no-store");
