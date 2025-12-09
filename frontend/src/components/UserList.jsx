@@ -88,10 +88,9 @@ const UserList = () => {
                         className="form-input"
                     >
                         <option value="">Enter a distance range</option>
-                        <option value="veryClose">Very Close (0-5 miles)</option>
-                        <option value="close">Close (5-15 miles)</option>
+                        <option value="close">Close (0-15 miles)</option>
                         <option value="moderate">Moderate (15-30 miles)</option>
-                        <option value="far">Far (30-50 miles)</option>
+                        <option value="far">Far (30-100 miles)</option>
                     </select>
                     </div>
 
@@ -136,20 +135,23 @@ const UserList = () => {
                         Apply Filters
                     </button>
                     </div>
-
+                    
                     <div className="items-container">
-                        {usersData.map((user) => (
-                        <GenericItem
-                            key={user._id}
-                            name={`${user.username}`}
-                            subtext={`${user.firstName} ${user.lastName}`}
-                            additional={`${user.city}, ${user.state}`}
-                            link={`/users/${user._id}`}
-                        />
-                        ))}
+                        {usersData.length === 0 ? (
+                            <h2>No users found</h2>
+                        ) : (
+                            usersData.map((user) => (
+                                <GenericItem
+                                    key={user._id}
+                                    name={user.username}
+                                    subtext={`${user.firstName} ${user.lastName}`}
+                                    additional={`${user.city}, ${user.state}`}
+                                    link={`/users/${user._id}`}
+                                />
+                            ))
+                        )}
                     </div>
                 <br></br>
-                
                 <Link className="link" to="/">Return Home</Link>
             </div>
         );

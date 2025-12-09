@@ -24,6 +24,7 @@ const App = () => {
         <Route path="/teams/:id" element={<Team />} />
         <Route path="/teams/:id/edit" element={<TeamForm mode="edit" />} />
         <Route path="*" element={<NotFound />} />
+
       </Routes>
     </div>
   );

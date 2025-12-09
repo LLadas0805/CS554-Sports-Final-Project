@@ -10,7 +10,6 @@ import http from 'http';
 import wrap from 'express-socket.io-session';
 import { RedisStore } from 'connect-redis';
 import { Server } from 'socket.io';
-import setupSocket from './socket/socket.js';
 import { initIndexes } from './config/indexes.js';
 
 app.use(express.json());
@@ -72,7 +71,6 @@ io.on("connection", (socket) => {
 
 });
 
-setupSocket(io);
 
 initIndexes();
 

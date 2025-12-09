@@ -32,18 +32,13 @@ export const createTeam = async (
         if (!sports.includes(newSport)) throw `Invalid sport`;
     }
 
-    const newExperience = helper.validText(experience, "skill level")
-    if (!skills.includes(newExperience)) throw 'Skill level not listed'
+    const newExperience = helper.validText(experience, "skill level");
 
     ownerId = helper.validText(ownerId, 'owner ID');
     if (!ObjectId.isValid(ownerId)) throw 'Invalid owner ID';
 
     const teamCollection = await teams();
-    const existingTeam = await teamCollection.findOne({ 
-        owner: new ObjectId(ownerId)
-    });
-
-    if (existingTeam) throw "Team with this owner ID already in use, cannot own more than one team!";
+    
 
     const {lat, lon} = await helper.getCoords(newCity, newState)
     const location = {
@@ -157,6 +152,19 @@ export const getTeamByOwnerId = async (ownerId) => {
     if (!team) throw 'No team with that owner id';
     return team
 }
+
+export const getTeamsByMemberId = async (memberId) => {
+    memberId = helper.validText(memberId, 'user ID');
+    if (!ObjectId.isValid(memberId)) throw 'invalid object ID';
+
+    const teamCollection = await teams();
+    const teamList = await teamCollection.find({
+        "members.userId": new ObjectId(memberId)
+    }).toArray();
+
+    return teamList
+}
+
 export const updateTeam = async(
     teamId,
     name,
