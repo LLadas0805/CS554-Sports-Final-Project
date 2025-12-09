@@ -397,7 +397,7 @@ export const removeTeamInvite = async (userId, teamId) => {
     const teamCollection = await teams();
 
     const user = await userCollection.findOne({ _id: new ObjectId(userId) });
-    if (user) throw 'User not found';
+    if (!user) throw 'User not found'; //small fix for proper validation
 
     const team = await teamCollection.findOne({ _id: new ObjectId(teamId) });
     if (!team) throw 'Team not found';
@@ -410,4 +410,31 @@ export const removeTeamInvite = async (userId, teamId) => {
     );
 
     return { removed: userId, teamId };
+};
+
+export const getPendingTeamInvites = async (userId) => {
+  userId = helper.validText(userId, 'user ID');
+  if (!ObjectId.isValid(userId)) throw 'invalid object ID';
+  const userCollection = await users();
+  const teamCollection = await teams();
+  const user = await userCollection.findOne({ _id: new ObjectId(userId) });
+  if (!user) throw 'User not found';
+  if (!user.teamInvites || user.teamInvites.length === 0) {
+      return [];
+  }
+  const teamIds = user.teamInvites.map(inv => inv.teamId);
+  const teamList = await teamCollection.find({
+      _id: { $in: teamIds }
+  }).toArray();
+  
+  const invitesWithTeamData = user.teamInvites.map(invite => {
+      const team = teamList.find(t => t._id.toString() === invite.teamId.toString());
+      return {
+          teamId: invite.teamId,
+          requestedAt: invite.requestedAt,
+          team: team || null
+      };
+  });
+  
+  return invitesWithTeamData;
 };

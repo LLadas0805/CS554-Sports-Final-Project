@@ -213,3 +213,27 @@ export const getGamesByTeamId = async (teamId) => {
     }).toArray();
     return gameList;
 }
+
+export const getUpcomingGamesByTeamId = async (teamId) => { //future events
+    teamId = helper.validText(teamId, 'team ID');
+    if (!ObjectId.isValid(teamId)) throw 'invalid object ID';
+    
+    const gameCollection = await games();
+    const now = new Date();
+    
+    let upcomingGames = await gameCollection.find({
+        $and: [
+            {
+                $or: [
+                    {'team1._id': new ObjectId(teamId)},
+                    {'team2._id': new ObjectId(teamId)}
+                ]
+            },
+            {
+                date: { $gte: now } //upcoming only
+            }
+        ]
+    }).sort({ date: 1 }).toArray();
+    
+    return upcomingGames;
+};
