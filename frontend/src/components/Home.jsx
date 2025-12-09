@@ -20,7 +20,7 @@ function Home(props) {
         if (data.loggedIn) {
           setLoggedId(data.user._id)
           setLogged(true);
-          
+
         } else {
             setLogged(false)
         }
@@ -39,7 +39,7 @@ function Home(props) {
         await axios.post("http://localhost:3000/user/logout", {}, {
             withCredentials: true
         });
-      
+
         alert("Logout successful!");
         navigate("/login");
     } catch (err) {
@@ -55,7 +55,7 @@ function Home(props) {
       </div>
     );
   }
-  
+
   return (
     <div>
         <h1>Welcome to Sports Finder</h1>
@@ -72,6 +72,9 @@ function Home(props) {
                     </Link>
                     <Link className='link' to={`/teams/`}>
                         View Teams
+                    </Link>
+                    <Link className='link' to={`/games/`}>
+                        View Games
                     </Link>
                     <button className="link" onClick={handleLogout}>
                         Logout
