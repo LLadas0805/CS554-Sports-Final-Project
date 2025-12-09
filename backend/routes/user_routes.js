@@ -139,86 +139,13 @@ router.route('/filter')
       sport
     } = req.body;
     try {
-      const distances = {close: 15, moderate: 30, far: 100}
-      let distanceVal = null;
-      if (distance !== "") {
-        distanceVal = distances[distance];
-      }
-      let userList = await users.getUsersByFilters(req.session.user._id.toString(), name, distanceVal, sport, skillLevel)
+      
+      let userList = await users.getUsersByFilters(req.session.user._id.toString(), name, distance, sport, skillLevel)
       res.status(200).json(userList)
     } catch (e) {
       return res.status(500).json({error: `Failed to filter users: ${e}`})
     }
   });
-
-
-
-router.route('/invites/accept')
-  .post(accountVerify, async (req, res) => {
-    try {
-      // logged-in user from session
-      const sessionUser = req.session.user;
-      if (!sessionUser || !sessionUser._id) {
-        return res.status(401).json({ error: 'Not logged in' });
-      }
-
-      const { teamId } = req.body;
-
-      try {
-        helper.validText(teamId, 'team ID');
-        if (!ObjectId.isValid(teamId)) throw 'invalid object ID';
-      } catch (e) {
-        return res.status(400).json({ error: e });
-      }
-
-      const result = await users.acceptTeamInvite(
-        sessionUser._id.toString(),
-        teamId
-      );
-
-      return res.status(200).json({
-        success: true,
-        result
-      });
-    } catch (e) {
-      console.error(e);
-      return res.status(500).json({ error: `Failed to accept invite: ${e}` });
-    }
-  });
-
-
-router.route('/invites/decline')
-  .post(accountVerify, async (req, res) => {
-    try {
-      const sessionUser = req.session.user;
-      if (!sessionUser || !sessionUser._id) {
-        return res.status(401).json({ error: 'Not logged in' });
-      }
-
-      const { teamId } = req.body;
-
-      try {
-        helper.validText(teamId, 'team ID');
-        if (!ObjectId.isValid(teamId)) throw 'invalid object ID';
-      } catch (e) {
-        return res.status(400).json({ error: e });
-      }
-
-      const result = await users.removeTeamInvite(
-        sessionUser._id.toString(),
-        teamId
-      );
-
-      return res.status(200).json({
-        success: true,
-        result
-      });
-    } catch (e) {
-      console.error(e);
-      return res.status(500).json({ error: `Failed to decline invite: ${e}` });
-    }
-  });
-
 
 router.route('/:id')
   .get(cacheUserId, async (req, res) => {
@@ -362,12 +289,9 @@ router.route('/login')
     } = req.body
 
     try {
-      if (typeof username !== 'string' || username.trim().length === 0) {
-        throw 'Username must be provided';
-      }
-      if (typeof password !== 'string' || password.trim().length === 0) {
-        throw 'Password must be provided';
-      }
+
+      helper.validUsername(username);
+      helper.validPassword(password);
     
     } catch (e) {
       return res.status(400).json({error: e});

@@ -5,79 +5,167 @@ import axios from 'axios';
 import {Link, useParams, useNavigate} from 'react-router-dom';
 
 const TeamList = () => {
-    const [name, setName] = useState("")
     const [teamsData, setTeamsData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    const [name, setName] = useState('');
+    const [sport, setSport] = useState('');
+    const [skillLevel, setSkillLevel] = useState('');
+    const [distance, setDistance] = useState('');
+
     useEffect(() => {
-        async function fetchData() {
-        try {
-            const {data} = await axios.get(`http://localhost:3000/team/`, {
-                withCredentials: true
+        async function fetchData(){
+        try{
+            setLoading(true);
+            setError('');
+            const { data } = await axios.get(`http://localhost:3000/team/`, {
+            withCredentials: true
             });
 
-            console.log(data);
-            if (data.error) throw "error fetching team"
-            setUsersData(data);    
-            setLoading(false);
+            if (data.error){
+                throw new Error(data.error);
+            }
 
-        } catch (e) {
+            setTeamsData(data);
+
+        } catch (e){
             console.log(e);
-            setLoading(false)
+            setError(e.message || 'Error fetching teams');
+
+        } finally{
+            setLoading(false);
         }
         }
         fetchData();
     }, []);
-    if (loading) {
-        return (
-        <div>
-            <h2>Loading....</h2>
-        </div>
-        );
-    } else {
-        return(
-            <div className="list-container">
-                <h1>Team List</h1>
-                <Link></Link>
-                <div className="filters">
-                    <div className="form-group-inline">
-                        <label htmlFor="name-filter">Name</label>
-                        <input
-                        id="name-filter"
-                        type="text"
-                        className="form-input"
-                        placeholder="Filter by team name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        />
-                    </div>
 
-                    <button
-                        className="btn btn-primary filter-btn"
-                        onClick={() =>
-                        setFilters({
-                            name
-                        })
-                        }
-                    >
-                        Apply Filters
-                    </button>
-                    </div>
-                    <div className="list-container">
-                        {teamsData.map((team) => (
-                        <GenericItem
-                            key={team._id}
-                            name={`${team.teamName}`}
-                            subtext={`${team.description}`}
-                            additional={`${team.city}, ${team.state}`}
-                            link={`/teams/${user._id}`}
-                        />
-                        ))}
-                    </div>
-                <br></br>
-                <Link className="link" to="/">Return Home</Link>
-            </div>
-        );
+  
+  const handleApplyFilters = async () => {
+    try{
+      setLoading(true);
+      setError('');
+
+      const body = {
+        name: name || undefined,
+        distance: distance || undefined,
+        skillLevel: skillLevel || undefined,
+        sport: sport || undefined
+      };
+
+      const { data } = await axios.post(`http://localhost:3000/team/filter`, body, {
+        withCredentials: true
+      });
+
+      if (data.error){
+        throw new Error(data.error);
+      }
+
+      setTeamsData(data);
+
+    } catch (e){
+      console.log(e);
+      setError(e.message || 'Error filtering teams');
+
+    } finally{
+      setLoading(false);
     }
-}
+  };
+
+  if (loading){
+    return (
+      <div>
+        <h2>Loading....</h2>
+      </div>
+    );
+  }
+
+  return (
+    <div className="list-container">
+      <h1>Team List</h1>
+
+      <Link className="btn btn-primary" to="/teams/new">
+        + Create Team
+      </Link>
+
+      <div className="filters">
+        <div className="form-group-inline">
+          <label htmlFor="name-filter">Name</label>
+          <input
+            id="name-filter"
+            type="text"
+            className="form-input"
+            placeholder="Filter by team name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+
+        <div className="form-group-inline">
+          <label htmlFor="sport-filter">Sport</label>
+          <input
+            id="sport-filter"
+            type="text"
+            className="form-input"
+            placeholder="Sport"
+            value={sport}
+            onChange={(e) => setSport(e.target.value)}
+          />
+        </div>
+
+        <div className="form-group-inline">
+          <label htmlFor="skill-filter">Skill Level</label>
+          <input
+            id="skill-filter"
+            type="text"
+            className="form-input"
+            placeholder="Skill level"
+            value={skillLevel}
+            onChange={(e) => setSkillLevel(e.target.value)}
+          />
+        </div>
+
+        <div className="form-group-inline">
+          <label htmlFor="distance-filter">Distance (miles)</label>
+          <input
+            id="distance-filter"
+            type="number"
+            className="form-input"
+            placeholder="Distance"
+            value={distance}
+            onChange={(e) => setDistance(e.target.value)}
+          />
+        </div>
+
+        <button
+          className="btn btn-primary filter-btn"
+          onClick={handleApplyFilters}
+        >
+          Apply Filters
+        </button>
+      </div>
+
+      {error && <p className="error">{error}</p>}
+
+      <div className="list-container">
+        {teamsData.map((team) => (
+          <GenericItem
+            key={team._id}
+            name={team.name || team.teamName || 'Unnamed Team'}
+            subtext={team.description}
+            additional={`${team.city}, ${team.state}`}
+            link={`/teams/${team._id}`}
+          />
+        ))}
+      </div>
+
+      <br />
+      <Link className="link" to="/">
+        Return Home
+      </Link>
+    </div>
+  );
+};
 
 export default TeamList;
+ 

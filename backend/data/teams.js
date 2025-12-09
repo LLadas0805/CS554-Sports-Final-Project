@@ -32,13 +32,18 @@ export const createTeam = async (
         if (!sports.includes(newSport)) throw `Invalid sport`;
     }
 
-    const newExperience = helper.validText(experience, "skill level");
+    const newExperience = helper.validText(experience, "skill level")
+    if (!skills.includes(newExperience)) throw 'Skill level not listed'
 
     ownerId = helper.validText(ownerId, 'owner ID');
     if (!ObjectId.isValid(ownerId)) throw 'Invalid owner ID';
 
     const teamCollection = await teams();
-    
+    const existingTeam = await teamCollection.findOne({ 
+        owner: new ObjectId(ownerId)
+    });
+
+    if (existingTeam) throw "Team with this owner ID already in use, cannot own more than one team!";
 
     const {lat, lon} = await helper.getCoords(newCity, newState)
     const location = {
@@ -99,53 +104,48 @@ export const getAllTeams = async () => {
 
 export const getTeamsByFilters = async (userId, name, distance, sport, skillLevel = "") => {
     
-    const teamCollection = await teams();
-    const userCollection = await users()
-    const user = await userCollection.findOne({ _id: new ObjectId(userId) });
-    if (!user) throw 'User not found';
+  const teamCollection = await teams();
 
-    const [lon, lat] = team.location.coordinates;
-    const distanceMeters = distance ? distance * 1609.34 : undefined;
+  const andConditions = [];
 
-    const andConditions = [];
+  if (skillLevel){
+    const newSkillLevel = helper.validText(skillLevel, 'skill level');
 
-    // Skill Level
-    if (skillLevel) {
-        const newSkillLevel = helper.validText(skillLevel, "skill level");
-        if (!skills.includes(newSkillLevel)) throw 'Skill level not listed';
-        andConditions.push({ skillLevel: newSkillLevel });
+    if (!skills.includes(newSkillLevel)){
+        throw 'Skill level not listed';
     }
 
-    // Sport
-    if (sport) {
-        const newSport = helper.validText(sport, "sport");
-        if (!sports.includes(newSport)) throw 'Invalid sport';
-        andConditions.push({ preferredSports: newSport }); 
+    andConditions.push({ experience: newSkillLevel });
+  }
+
+  if (sport){
+    const newSport = helper.validText(sport, 'sport');
+
+    if (!sports.includes(newSport)){
+        throw 'Invalid sport';
     }
+    
+    andConditions.push({ preferredSports: newSport });
 
-    // Name
-    if (name) {
-        const newName = helper.validText(name, "team name");
-        andConditions.push({ teamName: { $regex: newName, $options: "i" } });
-    }
+  }
 
-    // Base query: exclude self
-    const query = { _id: { $ne: new ObjectId(teamId) } };
-    if (andConditions.length) query.$and = andConditions;
+  if (name){
+    const newName = helper.validText(name, 'team name');
+    andConditions.push({ teamName: { $regex: newName, $options: 'i' } });
+  }
 
-    // Distance
-    if (distanceMeters) {
-        query.location = {
-            $near: {
-                $geometry: { type: "Point", coordinates: [lon, lat] },
-                $maxDistance: distanceMeters
-            }
-        };
-    }
+  const query = {};
+  if (andConditions.length > 0){
+    query.$and = andConditions;
+  }
 
-    const teamList = await teamCollection.find(query).toArray();
-    return teamList;
+  const teamList = await teamCollection.find(query).toArray();
 
+  teamList.forEach((t) => {
+    t._id = t._id.toString();
+  });
+
+  return teamList;
 };
 
 export const getTeamByOwnerId = async (ownerId) => {
@@ -157,19 +157,6 @@ export const getTeamByOwnerId = async (ownerId) => {
     if (!team) throw 'No team with that owner id';
     return team
 }
-
-export const getTeamsByMemberId = async (memberId) => {
-    memberId = helper.validText(memberId, 'user ID');
-    if (!ObjectId.isValid(memberId)) throw 'invalid object ID';
-
-    const teamCollection = await teams();
-    const teamList = await teamCollection.find({
-        "members.userId": new ObjectId(memberId)
-    }).toArray();
-
-    return teamList
-}
-
 export const updateTeam = async(
     teamId,
     name,
