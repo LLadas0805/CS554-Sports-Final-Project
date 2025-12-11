@@ -24,7 +24,7 @@ router.route('/')
 
 router.route('/create')
   .post(accountVerify, async (req, res) => {
-    const {
+    let {
         name,
         description,
         state,
@@ -34,6 +34,8 @@ router.route('/create')
     } = req.body;
 
     try {
+     
+        //if (!ObjectId.isValid(req.params.id)) throw 'invalid object ID';
 
         helper.validTeam(name);
 
@@ -42,8 +44,8 @@ router.route('/create')
         helper.validText(city, "city")
         if (!statesCities[state].includes(city)) throw `Invalid city for ${state}`
         
-        const ndescription = helper.validText(description, 'description')
-        if (ndescription.length < 10 || ndescription.length > 500) throw 'description length has to be at least 10 or no more than 500 characters'
+        description = helper.validText(description, 'description')
+        if (description.length < 10 || description.length > 500) throw 'description length has to be at least 10 or no more than 500 characters'
         if (!preferredSports || !Array.isArray(preferredSports) || preferredSports.length === 0) throw "Must include at least one sport!";
 
         for (const sport of preferredSports) {
@@ -52,22 +54,12 @@ router.route('/create')
         }
 
         helper.validText(experience, "skill level")
+        if (!skills.includes(experience)) throw 'Skill level not listed'
 
     } catch (e) {
-      console.error('team/create validation error:', e);
-
-      const msg =
-        typeof e === 'string'
-          ? e
-          : e?.message
-          ? e.message
-          : e?.toString
-          ? e.toString()
-          : 'Unknown validation error';
-
-      return res.status(400).json({ error: msg });
+      const msg = typeof e === 'string' ? e : e.message || 'Unknown error';
+      return res.status(400).json({error: msg});
     }
-
     
     try {
       const team = await teams.createTeam(
@@ -80,7 +72,7 @@ router.route('/create')
         experience
       );
 
-      await client.set(`team_id:${req.params.id}`, JSON.stringify(team)); 
+      await client.set(`team_id:${team._id}`, JSON.stringify(team));
       await client.del("teams")
       return res.status(200).json(team);
       
@@ -91,17 +83,70 @@ router.route('/create')
 
 router.route('/filter')
   .post(accountVerify, async (req, res) => {
-    const {
-      name,
-      distance,
-      skillLevel,
-      sport
-    } = req.body;
-    try {
-      let teams = await teams.getTeamsByFilters(req.session.user._id, name, distance, sport, skillLevel)
-      res.status(200).json(teams)
-    } catch (e) {
-      return res.status(500).json({error: `Failed to filter teams: ${e}`})
+    let { name, distance, skillLevel, sport } = req.body;
+
+    try{
+      if (typeof name === 'string'){
+        name = name.trim();
+        if (!name){
+          name = undefined;
+        }
+      }
+      
+      else{
+        name = undefined;
+      }
+
+      if (typeof sport === 'string'){
+        sport = sport.trim();
+        if (!sport){
+          sport = undefined;
+        }
+      }
+      
+      else{
+        sport = undefined;
+      }
+
+      if (typeof skillLevel === 'string'){
+        skillLevel = skillLevel.trim();
+        if (!skillLevel){
+          skillLevel = undefined;
+        }
+      }
+      
+      else{
+        skillLevel = undefined;
+      }
+
+      if (distance !== undefined && distance !== ''){
+        const d = Number(distance);
+        if (Number.isNaN(d) || d < 0){
+          return res
+            .status(400)
+            .json({ error: 'Distance must be a non-negative number' });
+        }
+        distance = d;
+      }
+      
+      else{
+        distance = undefined;
+      }
+
+      const result = await teams.getTeamsByFilters(
+        req.session.user._id,
+        name,
+        distance,
+        sport,
+        skillLevel
+      );
+
+      return res.status(200).json(result);
+    } catch (e){
+      console.error('Error in /team/filter:', e);
+      const msg =
+        typeof e === 'string' ? e : e.message || 'Failed to filter teams';
+      return res.status(500).json({ error: msg });
     }
   });
 
@@ -128,7 +173,7 @@ router.route('/:id')
     }
   })
   .put(accountVerify, async(req, res) => {
-    const {
+    let {
         name,
         description,
         state,
@@ -207,22 +252,6 @@ router.route('/:id')
     }
   });
 
-router.route('/members/:memberId') 
-  .get(async(req, res) => {
-    try {
-        helper.validText(req.params.memberId, 'member ID');
-        if (!ObjectId.isValid(req.params.memberId)) throw 'invalid object ID';   
-    } catch (e) {
-        return res.status(400).json({error: e});
-    }
-    try {
-        const result = await teams.getTeamsByMemberId(req.params.memberId);
-        res.status(200).json(result);
-    } catch (e) {
-        res.status(500).json({error: `Failed to find teams`})
-    }
-  })
-
 router.route('/members/:teamId/:memberId')
     .post(accountVerify, async(req, res) => {
         try {
@@ -258,6 +287,22 @@ router.route('/members/:teamId/:memberId')
             res.status(500).json({error: `Failed to delete member: ${e}`})
         }
     });
+
+router.route('/members/:memberId') 
+  .get(async(req, res) => {
+    try {
+        helper.validText(req.params.memberId, 'member ID');
+        if (!ObjectId.isValid(req.params.memberId)) throw 'invalid object ID';   
+    } catch (e) {
+        return res.status(400).json({error: e});
+    }
+    try {
+        const result = await teams.getTeamsByMemberId(req.params.memberId);
+        res.status(200).json(result);
+    } catch (e) {
+        res.status(500).json({error: `Failed to find teams`})
+    }
+  })
 
 router.route('/requests/:teamId/:userId')
     .post(accountVerify, async(req, res) => {

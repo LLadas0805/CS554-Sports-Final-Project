@@ -37,27 +37,30 @@ router.route('/create')
     } = req.body;
 
     try {
-
+     
         helper.validText(state, "state")
         if (!statesCities[state]) throw 'Invalid state'
         helper.validText(city, "city")
         if (!statesCities[state].includes(city)) throw `Invalid city for ${state}`
-
+        
         helper.validScore(score1)
         helper.validScore(score2)
 
         const newSport = helper.validText(sport)
         if (!sports.includes(newSport)) throw `Invalid sport`;
 
-        if (!ObjectId.isValid(helper.validText(team1Id, 'Team 1 ID'))) throw 'Invalid team 1 ID';
-        if (!ObjectId.isValid(helper.validText(team2Id, 'Team 2 ID'))) throw 'Invalid team 2 ID';
+        team1Id = helper.validText(team1Id, 'Team 1 ID');
+        if (!ObjectId.isValid(team1Id)) throw 'Invalid team 1 ID';
+
+        team2Id = helper.validText(team2Id, 'Team 2 ID');
+        if (!ObjectId.isValid(team2Id)) throw 'Invalid team 2 ID';
 
         helper.validDate(date)
 
     } catch (e) {
       return res.status(400).json({error: e});
     }
-
+    
     try {
       const game = await games.createGame(
         req.session.user,
@@ -71,11 +74,11 @@ router.route('/create')
         date
       );
 
-      await client.set(`game_id:${req.params.id}`, JSON.stringify(game));
+      await client.set(`game_id:${req.params.id}`, JSON.stringify(game)); 
       await client.del("games")
 
       return res.status(200).json(game);
-
+      
     } catch (e) {
       return res.status(500).json({error: `Failed to create game: ${e}`})
     }
@@ -92,7 +95,7 @@ router.route('/:id')
 
     try {
       let game = await games.getGameById(req.params.id)
-      await client.set(`_id:${req.params.id}`, JSON.stringify(game));
+      await client.set(`_id:${req.params.id}`, JSON.stringify(game)); 
       await client.del("games");
       return res.status(200).json(game);
     } catch (e) {
@@ -105,8 +108,6 @@ router.route('/:id')
   })
   .put(accountVerify, async(req, res) => {
     const {
-        team1Id,
-        team2Id,
         state,
         city,
         score1,
@@ -120,7 +121,7 @@ router.route('/:id')
         if (!statesCities[state]) throw 'Invalid state'
         helper.validText(city, "city")
         if (!statesCities[state].includes(city)) throw `Invalid city for ${state}`
-
+        
         helper.validScore(score1)
         helper.validScore(score2)
 
@@ -138,10 +139,8 @@ router.route('/:id')
 
     try {
       let updatedGame = await games.updateGame(
-        req.params.id,
+        req.params.id, 
         req.session.user,
-        team1Id,
-        team2Id,
         state,
         city,
         score1,
@@ -149,7 +148,7 @@ router.route('/:id')
         sport,
         date);
 
-      await client.set(`_id:${req.params.id}`, JSON.stringify(updatedGame));
+      await client.set(`_id:${req.params.id}`, JSON.stringify(updatedGame)); 
       await client.del("games");
 
       return res.status(200).json(updatedGame);
@@ -162,7 +161,7 @@ router.route('/:id')
         res.status(500).json({error: `Failed to update game: ${e}`})
       }
     }
-
+    
   })
   .delete(accountVerify, async(req, res) => {
     try {
@@ -182,6 +181,23 @@ router.route('/:id')
       } else {
         res.status(500).json({error: `Failed to delete game: ${e}`})
       }
+    }
+  });
+
+  router.route('/team/:teamId/upcoming')
+  .get(async (req, res) => {
+    try {
+      helper.validText(req.params.teamId, 'team ID');
+      if (!ObjectId.isValid(req.params.teamId)) throw 'invalid object ID';
+    } catch (e) {
+      return res.status(400).json({error: e});
+    }
+
+    try {
+      const upcomingGames = await games.getUpcomingGamesByTeamId(req.params.teamId);
+      return res.status(200).json(upcomingGames);
+    } catch (e) {
+      return res.status(500).json({error: `Failed to get upcoming games: ${e}`});
     }
   });
 

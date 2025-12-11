@@ -26,7 +26,7 @@ function UserEdit(props) {
 
                 console.log(id)
                 if (data.error) throw "error fetching user";
-
+                console.log(data.state)
                 // Populate form with user data
                 setFormData({
                     username: data.username || "",

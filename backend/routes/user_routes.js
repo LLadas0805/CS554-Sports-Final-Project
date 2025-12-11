@@ -151,74 +151,21 @@ router.route('/filter')
     }
   });
 
-
-
-router.route('/invites/accept')
-  .post(accountVerify, async (req, res) => {
-    try {
-      // logged-in user from session
-      const sessionUser = req.session.user;
-      if (!sessionUser || !sessionUser._id) {
-        return res.status(401).json({ error: 'Not logged in' });
-      }
-
-      const { teamId } = req.body;
-
-      try {
-        helper.validText(teamId, 'team ID');
-        if (!ObjectId.isValid(teamId)) throw 'invalid object ID';
-      } catch (e) {
-        return res.status(400).json({ error: e });
-      }
-
-      const result = await users.acceptTeamInvite(
-        sessionUser._id.toString(),
-        teamId
-      );
-
-      return res.status(200).json({
-        success: true,
-        result
-      });
-    } catch (e) {
-      console.error(e);
-      return res.status(500).json({ error: `Failed to accept invite: ${e}` });
-    }
-  });
-
-
-router.route('/invites/decline')
-  .post(accountVerify, async (req, res) => {
+router.route('/invites')
+  .get(accountVerify, async (req, res) => {
     try {
       const sessionUser = req.session.user;
       if (!sessionUser || !sessionUser._id) {
         return res.status(401).json({ error: 'Not logged in' });
       }
 
-      const { teamId } = req.body;
-
-      try {
-        helper.validText(teamId, 'team ID');
-        if (!ObjectId.isValid(teamId)) throw 'invalid object ID';
-      } catch (e) {
-        return res.status(400).json({ error: e });
-      }
-
-      const result = await users.removeTeamInvite(
-        sessionUser._id.toString(),
-        teamId
-      );
-
-      return res.status(200).json({
-        success: true,
-        result
-      });
+      const invites = await users.getPendingTeamInvites(sessionUser._id.toString());
+      return res.status(200).json(invites);
     } catch (e) {
       console.error(e);
-      return res.status(500).json({ error: `Failed to decline invite: ${e}` });
+      return res.status(500).json({ error: `Failed to get invites: ${e}` });
     }
   });
-
 
 router.route('/:id')
   .get(cacheUserId, async (req, res) => {
@@ -360,18 +307,6 @@ router.route('/login')
       username,
       password,
     } = req.body
-
-    try {
-      if (typeof username !== 'string' || username.trim().length === 0) {
-        throw 'Username must be provided';
-      }
-      if (typeof password !== 'string' || password.trim().length === 0) {
-        throw 'Password must be provided';
-      }
-    
-    } catch (e) {
-      return res.status(400).json({error: e});
-    }
 
     try {
       const signin = await users.login(username, password);

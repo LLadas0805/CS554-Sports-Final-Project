@@ -144,7 +144,8 @@ function Home(props) {
                     </Link>
                     <Link className='link' to={`/games/`}>
                         View Games
-                    <Link className='link' to='/teams/create'>
+                    </Link>
+                    <Link className='link' to='/teams/new'>
                       Create Team
                     </Link>
                     <button className="link" onClick={handleLogout}>
