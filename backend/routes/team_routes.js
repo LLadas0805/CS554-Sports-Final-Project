@@ -150,6 +150,43 @@ router.route('/filter')
     }
   });
 
+router.route('/user/:userId')
+  .get(accountVerify, async (req, res) => {
+    try {
+      helper.validText(req.params.userId, 'user ID');
+      if (!ObjectId.isValid(req.params.userId)) throw 'invalid object ID';
+    } catch (e) {
+      return res.status(400).json({error: e});
+    }
+
+    try {
+      const userTeams = await teams.getTeamsByMemberId(req.params.userId);
+      return res.status(200).json(userTeams);
+    } catch (e) {
+      return res.status(500).json({error: `Failed to get user teams: ${e}`});
+    }
+  });
+
+  router.route('/user/:userId/owned')
+  .get(accountVerify, async (req, res) => {
+    try {
+      helper.validText(req.params.userId, 'user ID');
+      if (!ObjectId.isValid(req.params.userId)) throw 'invalid object ID';
+    } catch (e) {
+      return res.status(400).json({error: e});
+    }
+
+    try {
+      const ownedTeam = await teams.getTeamByOwnerId(req.params.userId);
+      return res.status(200).json(ownedTeam);
+    } catch (e) {
+      if (e === 'No team with that owner id') {
+        return res.status(404).json({error: 'User does not own a team'});
+      }
+      return res.status(500).json({error: `Failed to get owned team: ${e}`});
+    }
+  });
+
 router.route('/:id')
   .get(cacheTeamId, async (req, res) => {
     try {
