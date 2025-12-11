@@ -145,11 +145,12 @@ function GameEdit() {
                               value={formData.team1Id}
                               onChange={handleChange}
                               className="form-input"
+                              disabled={isEditPage}
                             >
                                 <option value="">Select a Team</option>
                                 {teams.map((team) => (
                                   <option key={team._id} value={team._id}>
-                                    {team.name}
+                                    {team.teamName}
                                   </option>
                                 ))}
                             </select>
@@ -163,11 +164,12 @@ function GameEdit() {
                               value={formData.team2Id}
                               onChange={handleChange}
                               className="form-input"
+                              disabled={isEditPage}
                             >
                                 <option value="">Select a Team</option>
                                 {teams.map((team) => (
                                   <option key={team._id} value={team._id}>
-                                      {team.name}
+                                      {team.teamName}
                                   </option>
                                 ))}
                             </select>
