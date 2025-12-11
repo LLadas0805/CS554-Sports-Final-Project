@@ -361,3 +361,15 @@ export const removeJoinRequest = async (teamId, userId) => {
 
     return { removed: userId };
 };
+
+export const getTeamsByMemberId = async (memberId) => {
+    memberId = helper.validText(memberId, 'user ID');
+    if (!ObjectId.isValid(memberId)) throw 'invalid object ID';
+
+    const teamCollection = await teams();
+    const teamList = await teamCollection.find({
+        "members.userId": new ObjectId(memberId)
+    }).toArray();
+
+    return teamList;
+};

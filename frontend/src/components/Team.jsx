@@ -13,6 +13,8 @@ const Team = (props) => {
   const [message, setMessage] = useState('');
 
   const [inviteUserId, setInviteUserId] = useState('');
+  const [ownerData, setOwnerData] = useState(null);
+  const [membersData, setMembersData] = useState([]);
 
   
   useEffect(() => {
@@ -32,6 +34,39 @@ const Team = (props) => {
         }
 
         setTeamData(team);
+
+        // owner details
+        if (team.owner) {
+          try {
+            const {data: owner} = await axios.get(`http://localhost:3000/user/${team.owner}`, {
+              withCredentials: true
+            });
+            setOwnerData(owner);
+          } catch (err) {
+            console.error('Error fetching owner:', err);
+          }
+        }
+
+        // members details
+        if (team.members && team.members.length > 0) {
+          try {
+            const memberPromises = team.members.map(m => 
+              axios.get(`http://localhost:3000/user/${m.userId}`, {
+                withCredentials: true
+              }).catch(err => {
+                console.error(`Error fetching member ${m.userId}:`, err);
+                return null;
+              })
+            );
+            const memberResponses = await Promise.all(memberPromises);
+            const members = memberResponses
+              .filter(r => r !== null)
+              .map(r => r.data);
+            setMembersData(members);
+          } catch (err) {
+            console.error('Error fetching members:', err);
+          }
+        }
 
         const {data: loggedData} = await axios.get("http://localhost:3000/user/auth", {
             withCredentials: true
@@ -171,15 +206,39 @@ const isOwner = (() => {
             : 'None listed'}
         </p>
 
+        <h2>Team Owner:</h2>
+        {ownerData ? (
+          <p>
+            <Link to={`/users/${ownerData._id}`}>
+              {ownerData.username} ({ownerData.firstName} {ownerData.lastName})
+            </Link>
+          </p>
+        ) : (
+          <p>Loading owner...</p>
+        )}
+
+        <h2>Team Members ({membersData.length}):</h2>
+        {membersData.length > 0 ? (
+          <ul>
+            {membersData.map(member => (
+              <li key={member._id}>
+                <Link to={`/users/${member._id}`}>
+                  {member.username} ({member.firstName} {member.lastName})
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No members yet.</p>
+        )}
+
         {message && <p className="success">{message}</p>}
         {error && <p className="error">{error}</p>}
-
         {logged && !isOwner && (
           <button className="btn btn-primary" onClick={handleJoinRequest}>
             Request to Join Team
           </button>
         )}
-
         {logged && isOwner && (
           <div className="pages">
             <form onSubmit={handleInvite} className="invite-form">
