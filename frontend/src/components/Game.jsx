@@ -24,12 +24,12 @@ const Game = (props) => {
           team1: {
             _id: gameData.team1._id,
             score: gameData.team1.score,
-            name: teamList.find((team) => team._id === gameData.team1._id).name,
+            name: teamList.find((team) => team._id === gameData.team1._id).teamName,
           },
           team2: {
             _id: gameData.team2._id,
             score: gameData.team2.score,
-            name: teamList.find((team) => team._id === gameData.team2._id).name,
+            name: teamList.find((team) => team._id === gameData.team2._id).teamName,
           }
         });
 
