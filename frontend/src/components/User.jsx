@@ -2,10 +2,12 @@ import React, {useState, useEffect} from 'react';
 import NotFound from './NotFound';
 import axios from 'axios';
 import {Link, useParams, useNavigate} from 'react-router-dom';
+import { socket } from "../socket";
 
 const User = (props) => {
   const [userData, setUserData] = useState(undefined);
   const [loading, setLoading] = useState(true);
+  const [activeTeams, setActiveTeams] = useState([]);
   const navigate = useNavigate();
   // Use this for loading certain elements like team invites/edit/delete
   const [logged, setLogged] = useState(false);
@@ -35,6 +37,14 @@ const User = (props) => {
         } else {
             setLogged(false)
         }
+
+        const teamsRes = await axios.get(
+            `http://localhost:3000/team/members/${id}`,
+            { withCredentials: true }
+          );
+
+        setActiveTeams(teamsRes.data || []);
+
         setLoading(false);
 
       } catch (e) {
@@ -52,6 +62,7 @@ const User = (props) => {
         });
       
         alert("Logout successful!");
+        socket.disconnect();
         navigate("/login");
     } catch (err) {
         alert("Logout failed!");
@@ -106,6 +117,21 @@ const User = (props) => {
                 ? userData.beginnerSports.join(", ")
                 : "None listed"}
             </p>
+            
+            <h2>Active Teams</h2>
+              {activeTeams.length === 0 ? (
+                <p>None</p>
+              ) : (
+                <ul>
+                  {activeTeams.map((team) => (
+                    <li key={team._id}>
+                      <Link to={`/teams/${team._id}`}>
+                        {team.teamName} {team.owner === id && "(Owner)"}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
 
             {logged && (
                 <div className = "pages">

@@ -1,6 +1,7 @@
 import {Link, useNavigate} from 'react-router-dom';
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
+import { socket } from "../socket";
 
 function Home(props) {
 
@@ -66,6 +67,7 @@ function Home(props) {
         });
 
         alert("Logout successful!");
+        socket.disconnect();
         navigate("/login");
     } catch (err) {
         alert("Logout failed!");
@@ -137,16 +139,13 @@ function Home(props) {
                         Go to Profile
                     </Link>
                     <Link className='link' to={`/users/`}>
-                        View Users
+                        Browse Users
                     </Link>
                     <Link className='link' to={`/teams/`}>
-                        View Teams
+                        Browse Teams
                     </Link>
                     <Link className='link' to={`/games/`}>
-                        View Games
-                    </Link>
-                    <Link className='link' to='/teams/new'>
-                      Create Team
+                        Browse Games
                     </Link>
                     <button className="link" onClick={handleLogout}>
                         Logout
@@ -159,9 +158,9 @@ function Home(props) {
                       ) : (
                         <ul>
                           {activeTeams.map((team) => (
-                            <li key={team._id}>
-                              <Link to={`/teams/${team._id}`}>{team.teamName}</Link>
-                            </li>
+                            <Link to={`/teams/${team._id}`}>
+                              {team.teamName} {team.owner === loggedId && "(Owner)"}
+                            </Link>
                           ))}
                         </ul>
                       )}

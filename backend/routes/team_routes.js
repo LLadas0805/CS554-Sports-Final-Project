@@ -354,6 +354,21 @@ router.route('/requests/:teamId/:userId')
         }
         try {
             const result = await teams.sendJoinRequest(req.params.teamId, req.params.userId);
+            const io = req.app.locals.io;
+
+            io.to(req.params.userId).emit("notification", {
+              type: "TEAM_REQUEST_RECEIVED",
+              teamId: req.params.teamId,
+              from: req.session.user._id,
+              message: "Team request received!"
+            });
+
+            io.to(req.session.user._id).emit("notification", {
+              type: "TEAM_REQUEST_SENT",
+              teamId: req.params.teamId,
+              to: req.params.userId
+            });
+
             res.status(200).json(result);
         } catch (e) {
             res.status(500).json({error: `Failed to send join request: ${e}`})

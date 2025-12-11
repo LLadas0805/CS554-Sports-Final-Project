@@ -332,6 +332,21 @@ router.route('/requests/:userId/:teamId')
         }
         try {
             const result = await users.sendTeamInvite(req.params.userId, req.params.teamId);
+            const io = req.app.locals.io;
+
+            io.to(req.params.userId).emit("notification", {
+              type: "TEAM_INVITE_RECEIVED",
+              teamId: req.params.teamId,
+              from: req.session.user._id,
+              message: "Team invite received!"
+            });
+
+            io.to(req.session.user._id).emit("notification", {
+              type: "TEAM_INVITE_SENT",
+              teamId: req.params.teamId,
+              to: req.params.userId,
+            });
+
             res.status(200).json(result);
         } catch (e) {
             res.status(500).json({error: `Failed to invite user to team: ${e}`})

@@ -56,35 +56,33 @@ const Game = (props) => {
     } else {
       return (
         <div>
-          <h1>Game Detail</h1>
-          {/*<div className = "row">*/}
-          {/*  <h2>{game.firstName} {game.lastName}</h2>*/}
-          {/*</div>*/}
-          <div>
-            Sport: {game.sport}
+          <div className = "row">
+            <h1>{game.team1.name} vs {game.team2.name}</h1>
           </div>
-          <div>
-            State: {game.state}
+          <div className = "row">
+            <h2>
+              Sport: {game.sport}
+            </h2>
           </div>
-          <div>
-            City: {game.city}
+          <div className = "row">
+            <h2>
+              Location: {game.city}, {game.state}
+            </h2>
           </div>
-          <div>
-            Location(lat,lon): {game.location?.coordinates.join(',')}
+          <div className = "row">
+            <h2>
+              Game Date: {game.date.slice(0, 10)}
+            </h2>
           </div>
-          <div>
-           Game Date: {game.date.slice(0, 10)}
-          </div>
-          <div>
-            Created At: {game.createdAt?.slice(0, 10)}
-          </div>
-          <div>
-            Updated At: {game.updatedAt?.slice(0, 10)}
+          <div className = "row">
+            <h2>
+              Updated At: {game.updatedAt?.slice(0, 10) || game.createdAt?.slice(0, 10)}
+            </h2>    
           </div>
 
           <br/>
 
-          <table style={{border: '1px solid black', width: '100%'}}>
+          <table style={{border: '1px solid black', width: '50%'}}>
             <thead>
               <tr>
                 <th>Team</th>

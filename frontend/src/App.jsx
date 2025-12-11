@@ -13,8 +13,19 @@ import {Route, Link, Routes} from 'react-router-dom';
 import Game from './components/Game.jsx'
 import GameEdit from './components/GameEdit.jsx'
 import GameList from './components/GameList.jsx'
+import { useEffect } from "react";
+import { socket } from "./socket.js";
 
 const App = () => {
+  // Listens for notifications on backend
+  useEffect(() => {
+    socket.on("notification", (data) => {
+      alert(data.message);
+    });
+
+    return () => socket.off("notification");
+  }, []);
+
   return (
     <div className='App'>
       <Routes>

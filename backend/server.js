@@ -60,11 +60,8 @@ io.on("connection", (socket) => {
   }
 
   socket.userId = userId;
+  socket.join(userId);
   console.log("Authenticated user connected:", socket.userId);
-
-  socket.on("chat message", (msg) => {
-    io.emit("chat message", { msg, sender: socket.userId });
-  });
 
   socket.on("disconnect", () => {
     console.log(`Client disconnected: ${socket.id}`);

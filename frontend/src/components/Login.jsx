@@ -1,6 +1,7 @@
 import {Link, useNavigate} from 'react-router-dom';
 import React, { useState } from 'react';
 import axios from 'axios';
+import { socket } from "../socket";
 
 function Login(props) {
 
@@ -31,7 +32,8 @@ function Login(props) {
                 console.log("Login successful:", response.data);
                 alert("Login successful!");
                 setFormData(defaultData); 
-                navigate(`/users/${response.data._id}`);
+                socket.connect();
+                navigate(`/`);
             } catch (err) {
                 console.error(err.response?.data?.error);
                 alert(err.response?.data?.error || err.message);
