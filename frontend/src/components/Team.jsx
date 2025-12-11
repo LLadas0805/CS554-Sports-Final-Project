@@ -246,7 +246,6 @@ const isOwner = (() => {
             Request to Join Team
           </button>
         )}
-
         {logged && isOwner && (
           <div className="pages">
             <form onSubmit={handleInvite} className="invite-form">
