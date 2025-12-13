@@ -203,6 +203,8 @@ function Home(props) {
                       </ul>
                     )}
 
+                    
+
 
                     <section className="home-section">
                       <h2>Upcoming Events</h2>

@@ -1,16 +1,21 @@
-# React + Vite
+# CS554 Final Project Sports
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This file is meant for people to properly run this website once downloaded locally from the repository.
 
-Currently, two official plugins are available:
+## Running Setup
+### Running Using Node
+- If you want to host the website locally open two terminals in the project's directory and enter cd backend and cd frontend respectively. Perform an npm install for both of these directories to make sure the packages are properly downloaded
+- This website uses a .env to store the uri and url for mongo and docker so if you do not have a .env make sure to place the following inside one:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+MONGODB_URI=mongodb://localhost:27017/sportsdb
+REDIS_URL=redis://localhost:6379
 
-## React Compiler
+- This website also uses redis which was being run with as a docker container before running make sure this is set up
+- Finally you can enter npm start in both the backend and frontend directory and the website will begin to run
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Running Using Docker
+- If you want to run the website using docker, first, make sure you have docker installed, then you can type the following in the project's root directory "docker compose up --build" which will build the project into multiple containers with all the environmental variables set up and packages installed. 
 
-## Expanding the ESLint configuration
+## Seeding Data Into Project
+- If you want premade data such as users, teams, and games when starting the website from scratch you can run a seed file from the backend directory using "node seed.js". Comment out the deletion of documents if you do not want a clean reset after every seed.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.

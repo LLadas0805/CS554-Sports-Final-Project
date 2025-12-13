@@ -49,6 +49,8 @@ const io = new Server(server, {
   cors: { origin: "http://localhost:5173", credentials: true }
 });
 
+app.locals.io = io;
+
 io.use(wrap(sessionMiddleware, { autoSave: true }));
 
 io.on("connection", (socket) => {

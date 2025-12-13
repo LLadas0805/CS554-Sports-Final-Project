@@ -20,7 +20,9 @@ const App = () => {
   // Listens for notifications on backend
   useEffect(() => {
     socket.on("notification", (data) => {
-      alert(data.message);
+      if (data.message) {
+        alert(data.message);
+      }
     });
 
     return () => socket.off("notification");
