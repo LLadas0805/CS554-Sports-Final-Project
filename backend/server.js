@@ -87,7 +87,9 @@ setupSocket(io);
 
 initIndexes();
 
-server.listen(3000, () => {
+const PORT = process.env.PORT || 3000; // fallback only for local dev
+
+server.listen(PORT, () => {
   console.log("We've now got a server!");
   console.log('Your routes will be running on ');
 })
