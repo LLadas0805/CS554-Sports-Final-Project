@@ -20,7 +20,7 @@ const TeamList = () => {
         try{
             setLoading(true);
             setError('');
-            const { data } = await axios.get(`http://localhost:3000/api/team/`, {
+            const { data } = await axios.get(`/api/team/`, {
             withCredentials: true
             });
 
@@ -54,7 +54,7 @@ const TeamList = () => {
         sport: sport || undefined
       };
 
-      const { data } = await axios.post(`http://localhost:3000/api/team/filter`, body, {
+      const { data } = await axios.post(`/api/team/filter`, body, {
         withCredentials: true
       });
 

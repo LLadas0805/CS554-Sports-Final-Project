@@ -15,7 +15,7 @@ const UserList = () => {
     useEffect(() => {
         async function fetchData() {
         try {
-            const {data} = await axios.get(`http://localhost:3000/api/user/`, {
+            const {data} = await axios.get(`/api/user/`, {
                 withCredentials: true
             });
 
@@ -38,13 +38,13 @@ const UserList = () => {
         setLoading(true);
         try {
             if (name === "" && distance == "" && skillLevel == "any" && sport == "") {
-                const {data} = await axios.get(`http://localhost:3000/api/user/`, {
+                const {data} = await axios.get(`/api/user/`, {
                     withCredentials: true
                 });
                 setUsersData(data);
             } else {
                 
-                let { data } = await axios.post("http://localhost:3000/api/user/filter",
+                let { data } = await axios.post("/api/user/filter",
                     { name, distance, sport, skillLevel},
                 { withCredentials: true });
                 setUsersData(data);

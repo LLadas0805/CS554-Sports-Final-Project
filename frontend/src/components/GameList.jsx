@@ -29,7 +29,7 @@ const GameList = (props) => {
 
   async function fetchData() {
     try {
-      const { data } = await axios.get(`http://localhost:3000/api/game/`, {
+      const { data } = await axios.get(`/api/game/`, {
         withCredentials: true
       });
 
@@ -53,7 +53,7 @@ const GameList = (props) => {
     setLoading(true);
     try {
       if (sport === "") {
-        const { data } = await axios.get(`http://localhost:3000/api/game/`, {
+        const { data } = await axios.get(`/api/game/`, {
           withCredentials: true
         });
         setGames(data);
@@ -70,7 +70,7 @@ const GameList = (props) => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await axios.delete(`http://localhost:3000/api/game/${id}`, {
+      const response = await axios.delete(`/api/game/${id}`, {
         withCredentials: true
       });
       alert("Game deleted successfully");

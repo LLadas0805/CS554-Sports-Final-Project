@@ -75,7 +75,7 @@ function Signup(props) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post("http://localhost:3000/api/user/signup",  formData, { withCredentials: true },{
+            const response = await axios.post("/api/user/signup",  formData, { withCredentials: true },{
                 headers: { "Content-Type": "application/json" }
             });
             console.log("Signup successful:", response.data);

@@ -13,8 +13,8 @@ const Game = (props) => {
   useEffect(() => {
     async function fetchData() {
       try {
-        const { data: gameData } = await axios.get(`http://localhost:3000/api/game/${id}`, { withCredentials: true });
-        const { data: teamList } = await axios.get(`http://localhost:3000/api/team/`, { withCredentials: true } );
+        const { data: gameData } = await axios.get(`/api/game/${id}`, { withCredentials: true });
+        const { data: teamList } = await axios.get(`/api/team/`, { withCredentials: true } );
 
         if (gameData.error) throw "error fetching game";
         if (teamList.error) throw "Error fetching teams";

@@ -24,7 +24,7 @@ const Team = (props) => {
         setError('');
         setMessage('');
 
-        const {data: team} = await axios.get(`http://localhost:3000/api/team/${id}`, {
+        const {data: team} = await axios.get(`/api/team/${id}`, {
             withCredentials: true
         });
 
@@ -38,7 +38,7 @@ const Team = (props) => {
         // owner details
         if (team.owner) {
           try {
-            const {data: owner} = await axios.get(`http://localhost:3000/api/user/${team.owner}`, {
+            const {data: owner} = await axios.get(`/api/user/${team.owner}`, {
               withCredentials: true
             });
             setOwnerData(owner);
@@ -51,7 +51,7 @@ const Team = (props) => {
         if (team.members && team.members.length > 0) {
           try {
             const memberPromises = team.members.map(m => 
-              axios.get(`http://localhost:3000/api/user/${m.userId}`, {
+              axios.get(`/api/user/${m.userId}`, {
                 withCredentials: true
               }).catch(err => {
                 console.error(`Error fetching member ${m.userId}:`, err);
@@ -68,7 +68,7 @@ const Team = (props) => {
           }
         }
 
-        const {data: loggedData} = await axios.get("http://localhost:3000/api/user/auth", {
+        const {data: loggedData} = await axios.get("/api/user/auth", {
             withCredentials: true
         });
         if (loggedData.loggedIn) {
@@ -124,7 +124,7 @@ const isOwner = (() => {
       setError('');
       setMessage('');
       await axios.post(
-        `http://localhost:3000/api/team/requests/${id}/${authUser._id}`,
+        `/api/team/requests/${id}/${authUser._id}`,
         {},
         { withCredentials: true }
       );
@@ -144,7 +144,7 @@ const isOwner = (() => {
       setError('');
       setMessage('');
       await axios.post(
-        `http://localhost:3000/api/team/members/${id}/${inviteUserId.trim()}`,
+        `/api/team/members/${id}/${inviteUserId.trim()}`,
         {},
         { withCredentials: true }
       );
@@ -152,7 +152,7 @@ const isOwner = (() => {
       setInviteUserId('');
 
     
-      const { data: updated } = await axios.get(`http://localhost:3000/api/team/${id}`, {
+      const { data: updated } = await axios.get(`/api/team/${id}`, {
         withCredentials: true
       });
 

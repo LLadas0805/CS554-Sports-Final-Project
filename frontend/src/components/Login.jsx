@@ -26,7 +26,7 @@ function Login(props) {
     const handleSubmit = async (e) => {
             e.preventDefault();
             try {
-                const response = await axios.post("http://localhost:3000/api/user/login", formData, { withCredentials: true }, {
+                const response = await axios.post("/api/user/login", formData, { withCredentials: true }, {
                     headers: { "Content-Type": "application/json" }
                 });
                 console.log("Login successful:", response.data);
