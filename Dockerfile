@@ -1,21 +1,36 @@
-# Build frontend
+# --------------------
+# 1. Build frontend
+# --------------------
 FROM node:20 AS frontend
 WORKDIR /app/frontend
+
+# Copy package.json and install deps
 COPY frontend/package*.json ./
 RUN npm install
-COPY frontend .
+
+# Copy all frontend files and build
+COPY frontend/ ./
 RUN npm run build
 
-# Build backend
+# --------------------
+# 2. Build backend
+# --------------------
 FROM node:20
 WORKDIR /app/backend
+
+# Copy package.json and install deps
 COPY backend/package*.json ./
 RUN npm install
-COPY backend .
 
-# Copy frontend build into backend
-COPY --from=frontend /app/frontend/dist ./public
+# Copy backend source
+COPY backend/ ./
 
+# Copy frontend build into backend's dist folder
+COPY --from=frontend /app/frontend/dist ./dist
+
+# Environment
 ENV NODE_ENV=production
 EXPOSE 3000
+
+# Start backend server
 CMD ["npm", "start"]

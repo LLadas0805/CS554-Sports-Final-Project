@@ -47,12 +47,12 @@ configRoutes(app); // /api/... routes
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const frontendPath = path.join(__dirname, '..', 'frontend', 'dist');
-app.use(express.static(frontendPath));
+const frontendPath = path.join('dist');
+app.use(express.static(path.join(process.cwd(), "dist")));
 
 // 3. React SPA catch-all
 app.get(/^(?!\/api).*/, (req, res) => {
-  res.sendFile(path.join(frontendPath, 'index.html'));
+  res.sendFile(path.join(process.cwd(), "dist", "index.html"));
 });
 
 const server = http.createServer(app);
