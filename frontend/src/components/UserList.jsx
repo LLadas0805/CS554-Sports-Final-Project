@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import GenericItem from './GenericItem';
 import NotFound from './NotFound';
 import axios from 'axios';
-import sports from '../../../shared/enums/sports.js';
+import sports from '../shared/enums/sports.js';
 import {Link, useParams, useNavigate} from 'react-router-dom';
 
 const UserList = () => {
@@ -15,7 +15,7 @@ const UserList = () => {
     useEffect(() => {
         async function fetchData() {
         try {
-            const {data} = await axios.get(`http://localhost:3000/user/`, {
+            const {data} = await axios.get(`http://localhost:3000/api/user/`, {
                 withCredentials: true
             });
 
@@ -38,13 +38,13 @@ const UserList = () => {
         setLoading(true);
         try {
             if (name === "" && distance == "" && skillLevel == "any" && sport == "") {
-                const {data} = await axios.get(`http://localhost:3000/user/`, {
+                const {data} = await axios.get(`http://localhost:3000/api/user/`, {
                     withCredentials: true
                 });
                 setUsersData(data);
             } else {
                 
-                let { data } = await axios.post("http://localhost:3000/user/filter",
+                let { data } = await axios.post("http://localhost:3000/api/user/filter",
                     { name, distance, sport, skillLevel},
                 { withCredentials: true });
                 setUsersData(data);

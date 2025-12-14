@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import sports from '../../../shared/enums/sports.js';
+import sports from '../shared/enums/sports.js';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 
 const styles = {
@@ -29,7 +29,7 @@ const GameList = (props) => {
 
   async function fetchData() {
     try {
-      const { data } = await axios.get(`http://localhost:3000/game/`, {
+      const { data } = await axios.get(`http://localhost:3000/api/game/`, {
         withCredentials: true
       });
 
@@ -53,7 +53,7 @@ const GameList = (props) => {
     setLoading(true);
     try {
       if (sport === "") {
-        const { data } = await axios.get(`http://localhost:3000/game/`, {
+        const { data } = await axios.get(`http://localhost:3000/api/game/`, {
           withCredentials: true
         });
         setGames(data);
@@ -70,7 +70,7 @@ const GameList = (props) => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await axios.delete(`http://localhost:3000/game/${id}`, {
+      const response = await axios.delete(`http://localhost:3000/api/game/${id}`, {
         withCredentials: true
       });
       alert("Game deleted successfully");

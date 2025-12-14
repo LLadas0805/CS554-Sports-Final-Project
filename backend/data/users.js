@@ -3,9 +3,9 @@ import * as helper from '../helpers.js'
 import {ObjectId} from 'mongodb';
 import {users, teams} from '../config/mongoCollections.js';
 import bcrypt from 'bcrypt';
-import sports from "../../shared/enums/sports.js";
-import skills  from "../../shared/enums/skills.js";
-import statesCities from '../../shared/data/US_States_and_Cities.json' with { type: 'json' };
+import sports from "../shared/enums/sports.js";
+import skills  from "../shared/enums/skills.js";
+import statesCities from '../shared/data/US_States_and_Cities.json' with { type: 'json' };
 
 export const register = async (
   username,

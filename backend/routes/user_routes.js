@@ -4,9 +4,9 @@ import * as helper from '../helpers.js'
 import { accountVerify, accountLogged } from '../middleware/middleware_auth.js';
 import * as users from '../data/users.js';
 import {cacheUserId, cacheUsers } from "../middleware/middleware_cache_user.js"
-import sports from "../../shared/enums/sports.js";
-import skills  from "../../shared/enums/skills.js";
-import statesCities from '../../shared/data/US_States_and_Cities.json' with { type: 'json' };
+import sports from "../shared/enums/sports.js";
+import skills  from "../shared/enums/skills.js";
+import statesCities from '../shared/data/US_States_and_Cities.json' with { type: 'json' };
 
 import client from '../config/redisClient.js';
 const router = Router();

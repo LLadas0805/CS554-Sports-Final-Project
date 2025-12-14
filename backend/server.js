@@ -12,6 +12,8 @@ import { RedisStore } from 'connect-redis';
 import { Server } from 'socket.io';
 import setupSocket from './socket/socket.js';
 import { initIndexes } from './config/indexes.js';
+import { fileURLToPath } from 'url';
+import path from 'path';
 
 app.use(express.json());
 
@@ -33,20 +35,30 @@ const rewriteUnsupportedBrowserMethods = (req, res, next) => {
   next();
 };
 
-app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(rewriteUnsupportedBrowserMethods);
 app.use(cors({
-  origin: "http://localhost:5173",
   credentials: true
 }));
 
-configRoutes(app);
+configRoutes(app); // /api/... routes
+
+// 2. Serve frontend static files
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const frontendPath = path.join(__dirname, '..', 'frontend', 'dist');
+app.use(express.static(frontendPath));
+
+// 3. React SPA catch-all
+app.get(/^(?!\/api).*/, (req, res) => {
+  res.sendFile(path.join(frontendPath, 'index.html'));
+});
 
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: { origin: "http://localhost:5173", credentials: true }
+  cors: { origin: "*", credentials: true }
 });
 
 app.locals.io = io;

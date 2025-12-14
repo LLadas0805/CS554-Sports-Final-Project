@@ -1,7 +1,7 @@
 import {Link, useNavigate, useParams} from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
-import statesCities from '../../../shared/data/US_States_and_Cities.json' with { type: 'json' };
-import sports from '../../../shared/enums/sports.js';
+import statesCities from '../shared/data/US_States_and_Cities.json' with { type: 'json' };
+import sports from '../shared/enums/sports.js';
 import axios from 'axios';
 
 function UserEdit(props) {
@@ -20,7 +20,7 @@ function UserEdit(props) {
         async function fetchData() {
             try {
                 const { data } = await axios.get(
-                    `http://localhost:3000/user/${id}`,
+                    `http://localhost:3000/api/user/${id}`,
                     { withCredentials: true }
                 );
 
@@ -44,7 +44,7 @@ function UserEdit(props) {
 
                 // Check auth
                 const { data: loggedData } = await axios.get(
-                    "http://localhost:3000/user/auth",
+                    "http://localhost:3000/api/user/auth",
                     { withCredentials: true }
                 );
 
@@ -115,7 +115,7 @@ function UserEdit(props) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.put(`http://localhost:3000/user/${id}`,  formData, { withCredentials: true },{
+            const response = await axios.put(`http://localhost:3000/api/user/${id}`,  formData, { withCredentials: true },{
                 headers: { "Content-Type": "application/json" }
             });
             console.log("Edit successful:", response.data);

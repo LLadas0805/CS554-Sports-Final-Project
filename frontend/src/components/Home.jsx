@@ -20,7 +20,7 @@ function Home(props) {
     async function fetchData() {
       try {
 
-        let {data} = await axios.get("http://localhost:3000/user/auth", {
+        let {data} = await axios.get("http://localhost:3000/api/user/auth", {
             withCredentials: true
         });
         if (data.loggedIn) {
@@ -31,7 +31,7 @@ function Home(props) {
           setPendingInvites(data.user.teamInvites || []);
 
           const teamsRes = await axios.get(
-            `http://localhost:3000/team/members/${data.user._id}`,
+            `http://localhost:3000/api/team/members/${data.user._id}`,
             { withCredentials: true }
           );
 
@@ -39,7 +39,7 @@ function Home(props) {
 
           try {
             const eventsRes = await axios.get(
-              `http://localhost:3000/events/upcoming/${data.user._id}`,
+              `http://localhost:3000/api/events/upcoming/${data.user._id}`,
               { withCredentials: true }
             );
             setUpcomingEvents(eventsRes.data || []);
@@ -62,7 +62,7 @@ function Home(props) {
 
   const handleLogout = async () => {
     try {
-        await axios.post("http://localhost:3000/user/logout", {}, {
+        await axios.post("http://localhost:3000/api/user/logout", {}, {
             withCredentials: true
         });
 
@@ -78,7 +78,7 @@ function Home(props) {
   const handleAcceptInvite = async (invite) => {
     try {
       await axios.post(
-        "http://localhost:3000/user/invites/accept",
+        "http://localhost:3000/api/user/invites/accept",
         {
           teamId: invite.teamId
         },
@@ -102,7 +102,7 @@ function Home(props) {
   const handleDeclineInvite = async (invite) => {
     try {
       await axios.post(
-        "http://localhost:3000/user/invites/decline",
+        "http://localhost:3000/api/user/invites/decline",
         {
           teamId: invite.teamId
         },

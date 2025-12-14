@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import GenericItem from './GenericItem';
 import NotFound from './NotFound';
 import axios from 'axios';
-import sports from '../../../shared/enums/sports.js';
+import sports from '../shared/enums/sports.js';
 import {Link, useParams, useNavigate} from 'react-router-dom';
 
 const TeamList = () => {
@@ -20,7 +20,7 @@ const TeamList = () => {
         try{
             setLoading(true);
             setError('');
-            const { data } = await axios.get(`http://localhost:3000/team/`, {
+            const { data } = await axios.get(`http://localhost:3000/api/team/`, {
             withCredentials: true
             });
 
@@ -54,7 +54,7 @@ const TeamList = () => {
         sport: sport || undefined
       };
 
-      const { data } = await axios.post(`http://localhost:3000/team/filter`, body, {
+      const { data } = await axios.post(`http://localhost:3000/api/team/filter`, body, {
         withCredentials: true
       });
 

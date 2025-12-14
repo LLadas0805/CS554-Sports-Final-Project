@@ -1,7 +1,7 @@
 import {Link, useNavigate, useParams} from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
-import statesCities from '../../../shared/data/US_States_and_Cities.json' with { type: 'json' };
-import sports from '../../../shared/enums/sports.js';
+import statesCities from '../shared/data/US_States_and_Cities.json' with { type: 'json' };
+import sports from '../shared/enums/sports.js';
 import axios from 'axios';
 
 function GameEdit() {
@@ -27,7 +27,7 @@ function GameEdit() {
             setLoading(true);
             try {
                 const { data } = await axios.get(
-                    `http://localhost:3000/game/${id}`,
+                    `http://localhost:3000/api/game/${id}`,
                     { withCredentials: true }
                 );
 
@@ -54,7 +54,7 @@ function GameEdit() {
         async function fetchTeams() {
             try {
                 const { data } = await axios.get(
-                    `http://localhost:3000/team/`,
+                    `http://localhost:3000/api/team/`,
                     { withCredentials: true }
                 );
                 if (data.error) throw "Error fetching teams";
@@ -99,7 +99,7 @@ function GameEdit() {
 
         if(isEditPage) {
             try {
-                const response = await axios.put(`http://localhost:3000/game/${id}`, formData, { withCredentials: true },{
+                const response = await axios.put(`http://localhost:3000/api/game/${id}`, formData, { withCredentials: true },{
                     headers: { "Content-Type": "application/json" }
                 });
                 console.log("Edit successful:", response.data);
@@ -111,7 +111,7 @@ function GameEdit() {
             }
         } else {
             try {
-                const response = await axios.post(`http://localhost:3000/game/create`,  formData, { withCredentials: true },{
+                const response = await axios.post(`http://localhost:3000/api/game/create`,  formData, { withCredentials: true },{
                     headers: { "Content-Type": "application/json" }
                 });
                 console.log("New game successful:", response);
