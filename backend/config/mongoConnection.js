@@ -11,8 +11,6 @@ const dbConnection = async () => {
 
   if (!_connection) {
     _connection = await MongoClient.connect(mongoUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
       tls: true,                     
       tlsAllowInvalidCertificates: false, 
     });
