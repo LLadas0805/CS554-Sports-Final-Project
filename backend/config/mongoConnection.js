@@ -10,7 +10,12 @@ const dbConnection = async () => {
   const mongoUri = process.env.MONGODB_URI;
 
   if (!_connection) {
-    _connection = await MongoClient.connect(mongoUri);
+    _connection = await MongoClient.connect(mongoUri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      tls: true,                     
+      tlsAllowInvalidCertificates: false, 
+    });
     _db = _connection.db(); 
     
   }
