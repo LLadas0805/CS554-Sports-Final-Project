@@ -60,7 +60,7 @@ export const createTeam = async (
         preferredSports,
         experience,
         location,
-        members: [new ObjectId(ownerId)],
+        members: [{userId: new ObjectId(ownerId), requestedAt: new Date() }],
         joinRequests: [],
         createdAt: new Date()
     };
@@ -190,12 +190,8 @@ export const getTeamsByMemberId = async (memberId) => {
     if (!ObjectId.isValid(memberId)) throw 'invalid object ID';
 
     const teamCollection = await teams();
-    // members may be stored as ObjectId values (preferred) or objects with a userId field (legacy)
     const teamList = await teamCollection.find({
-        $or: [
-            { members: new ObjectId(memberId) },
-            { 'members.userId': new ObjectId(memberId) }
-        ]
+        "members.userId": new ObjectId(memberId)
     }).toArray();
 
     return teamList;
@@ -306,24 +302,14 @@ export const addMember = async (teamId, user, memberId) => {
 
     if (team.owner.toString() !== user._id.toString()) throw 'Only the team owner can add members';
    
-    
-    const memberIdStr = memberId.toString();
-    const existingMemberIds = team.members.map((m) => {
-        if (m && m.userId) return m.userId.toString();
-        return m.toString();
-    });
 
-    if (existingMemberIds.includes(memberIdStr)) throw 'Member is already in the team';
+    if (team.members.some(m => m.toString() === memberId)) throw 'Member is already in the team';
 
-    if (existingMemberIds.length >= 50) throw `Team already has the maximum of 50 members`;
+    if (team.members.length >= 50) throw `Team already has the maximum of 50 members`;
 
-    
     await teamCollection.updateOne(
         { _id: new ObjectId(teamId) },
-        {
-            $push: { members: new ObjectId(memberId) },
-            $pull: { joinRequests: { userId: new ObjectId(memberId) } }
-        }
+        { $push: { members: new ObjectId(memberId) } }
     );
 
     return { added: memberId };
@@ -343,23 +329,17 @@ export const deleteMember = async (teamId, user, memberId) => {
     const team = await teamCollection.findOne({ _id: new ObjectId(teamId) });
     if (!team) throw 'Team not found';
 
-    if (team.owner.toString() !== user._id.toString() || user._id.toString() !== memberId) throw 'Only the team owner or current deleted member can delete members';
+    if (team.owner.toString() !== user._id.toString()) throw 'Only the team owner can delete members';
    
     if (team.owner.toString() === memberId.toString()) throw 'You cannot delete the owner from the team';
 
-    
-    const existingMemberIds = team.members.map((m) => {
-        if (m && m.userId) return m.userId.toString();
-        return m.toString();
-    });
-
-    if (!existingMemberIds.includes(memberId.toString())) throw 'Member is not in the team';
+    if (!team.members.some(m => m.toString() === memberId)) throw 'Member is not in the team';
 
     await teamCollection.updateOne(
         { _id: new ObjectId(teamId) },
-        { $pull: { members: new ObjectId(memberId) } }  
+        { $pull: { members: new ObjectId(memberId) } }
     );
-    return { removed: memberId };
+    return { added: memberId };
 
 };
 
@@ -371,13 +351,9 @@ export const sendJoinRequest = async (teamId, userId) => {
     if (!ObjectId.isValid(userId)) throw 'Invalid user ID';
 
     const teamCollection = await teams();
-    const userCollection = await users();
 
     const team = await teamCollection.findOne({ _id: new ObjectId(teamId) });
     if (!team) throw 'Team not found';
-
-    const user = await userCollection.findOne({_id: new ObjectId(userId)});
-    if (!user) throw 'User not found'
 
     if (team.members.some(m => m.toString() === userId.toString())) throw 'User is already a member of the team';
 
@@ -385,12 +361,11 @@ export const sendJoinRequest = async (teamId, userId) => {
 
     await teamCollection.updateOne(
         { _id: new ObjectId(teamId) },
-        { $push: { joinRequests: { _id: new ObjectId(), teamId: new ObjectId(teamId), teamName: team.teamName, userId: new ObjectId(userId), userName: user.username, requestedAt: new Date() } } }
+        { $push: { joinRequests: { userId: new ObjectId(userId), requestedAt: new Date() } } }
     );
 
     return { requested: teamId };
 };
-
 
 export const removeJoinRequest = async (teamId, userId) => {
     teamId = helper.validText(teamId, 'team ID');

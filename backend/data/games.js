@@ -50,9 +50,14 @@ export const createGame = async (
 
     if(!existingTeam1.owner || !existingTeam2.owner) throw "The playing teams do not have owner"
 
-    // user must own at least one of the teams
-    if (existingTeam1.owner.toString() !== user._id.toString() && existingTeam2.owner.toString() !== user._id.toString())
-        throw "User needs to be an owner of one of the playing teams"
+
+    const userId = user._id.toString();
+    const ownsTeam1 = existingTeam1.owner.toString() === userId;
+    const ownsTeam2 = existingTeam2.owner.toString() === userId;
+
+    if (!ownsTeam1 && !ownsTeam2){
+        throw "Error: User needs to be an owner of one of the playing teams";
+    }
 
     const {lat, lon} = await helper.getCoords(newCity, newState)
     const location = {
@@ -106,8 +111,15 @@ export const getAllGames = async (user) => {
       const game2Id = game.team2._id.toString();
       const userId = user._id.toString();
 
-      let canEditOrDelete = teamList.some(team => team._id.toString() === game1Id && team.owner.toString() === userId) &&
-        teamList.some(team => team._id.toString() === game2Id && team.owner.toString() === userId);
+    const ownsTeam1 = teamList.some(
+        (team) => team._id.toString() === game1Id && team.owner.toString() === userId
+    );
+    
+    const ownsTeam2 = teamList.some(
+        (team) => team._id.toString() === game2Id && team.owner.toString() === userId
+    );
+
+    const canEditOrDelete = ownsTeam1 || ownsTeam2;
 
       return {
         ...game,
@@ -190,11 +202,11 @@ export const updateGame = async(
         if (team1.owner.toString() !== user._id.toString() && team2.owner.toString() !== user._id.toString()) throw 'User did not create this team and cannot update game'
 
         const updatedGameData = {
-            team1: {_id: new ObjectId(String(team1._id)), name: team1.teamName, score: score1 || null},
-            team2: {_id: new ObjectId(String(team2._id)), name: team2.teamName, score: score2 || null},
-            sport: newSport,
-            state: newState,
-            city: newCity,
+            team1: {_id: new ObjectId(team1._id), score: score1 || null},
+            team2: {_id: new ObjectId(team2._id), score: score2 || null},
+            sport,
+            state,
+            city,
             location,
             date: newDate,
             updatedAt: new Date()
