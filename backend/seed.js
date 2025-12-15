@@ -132,7 +132,7 @@ const seedTeams = [
     preferredSports: ["Basketball"],
     experience: "Advanced",
     location: { type: "Point", coordinates: [-122.4194, 37.7749] },
-    members: [{ userId: LUKE_ID, requestedAt: new Date() }],
+    members: [LUKE_ID],
     joinRequests: [],
     createdAt: new Date()
   },
@@ -147,7 +147,7 @@ const seedTeams = [
     preferredSports: ["Soccer"],
     experience: "Intermediate",
     location: { type: "Point", coordinates: [-74.0060, 40.7128] },
-    members: [{ userId: BILLY_ID, requestedAt: new Date() }],
+    members: [BILLY_ID],
     joinRequests: [],
     createdAt: new Date()
   },
@@ -162,7 +162,7 @@ const seedTeams = [
     preferredSports: ["Badminton", "Pickleball"],
     experience: "Advanced",
     location: { type: "Point", coordinates: [-97.7431, 30.2672] },
-    members: [{ userId: MARIA_ID, requestedAt: new Date() }],
+    members: [MARIA_ID],
     joinRequests: [],
     createdAt: new Date()
   },
@@ -177,7 +177,7 @@ const seedTeams = [
     preferredSports: ["Ultimate Frisbee", "Softball"],
     experience: "Intermediate",
     location: { type: "Point", coordinates: [-87.6298, 41.8781] },
-    members: [{ userId: AIDEN_ID, requestedAt: new Date() }],
+    members: [AIDEN_ID],
     joinRequests: [],
     createdAt: new Date()
   }

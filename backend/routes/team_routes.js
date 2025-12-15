@@ -303,6 +303,8 @@ router.route('/members/:teamId/:memberId')
         }
         try {
             const result = await teams.addMember(req.params.teamId, req.user, req.params.memberId);
+            await client.del(`team_id:${req.params.teamId}`);
+            await client.del("teams")
             res.status(200).json(result);
         } catch (e) {
             res.status(500).json({error: `Failed to add member: ${e}`})
@@ -320,6 +322,8 @@ router.route('/members/:teamId/:memberId')
         }
         try {
             const result = await teams.deleteMember(req.params.teamId, req.user, req.params.memberId);
+            await client.del(`team_id:${req.params.teamId}`);
+            await client.del("teams")
             res.status(200).json(result);
         } catch (e) {
             res.status(500).json({error: `Failed to delete member: ${e}`})
@@ -369,7 +373,8 @@ router.route('/requests/:teamId/:userId')
               teamId: req.params.teamId,
               to: req.params.userId
             });
-
+            await client.del(`team_id:${req.params.teamId}`);
+            await client.del("teams")
             res.status(200).json(result);
         } catch (e) {
             res.status(500).json({error: `Failed to send join request: ${e}`})
@@ -387,6 +392,8 @@ router.route('/requests/:teamId/:userId')
         }
         try {
             const result = await teams.removeJoinRequest(req.params.teamId, req.params.userId);
+            await client.del(`team_id:${req.params.teamId}`);
+            await client.del("teams")
             res.status(200).json(result);
         } catch (e) {
             res.status(500).json({error: `Failed to delete join request: ${e}`})
