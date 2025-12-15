@@ -15,7 +15,7 @@ const Team = (props) => {
   const [inviteUserId, setInviteUserId] = useState('');
   const [ownerData, setOwnerData] = useState(null);
   const [membersData, setMembersData] = useState([]);
-  const [gamesData, setGamesData] = useState([]);
+  const [gamesData, setGamesData] = useState([])
 
   useEffect(() => {
     async function fetchData() {
@@ -34,10 +34,10 @@ const Team = (props) => {
 
         setTeamData(team);
 
-        // Owner details
+        // owner details
         if (team.owner) {
           try {
-            const { data: owner } = await axios.get(`http://localhost:3000/user/${team.owner}`, {
+            const {data: owner} = await axios.get(`http://localhost:3000/user/${team.owner}`, {
               withCredentials: true
             });
             setOwnerData(owner);
@@ -46,23 +46,29 @@ const Team = (props) => {
           }
         }
 
-        // Members details
+        // members details
         if (team.members && team.members.length > 0) {
           try {
-            const memberPromises = team.members.map((m) =>
-              axios.get(`http://localhost:3000/user/${m}`, { withCredentials: true }).catch(() => null)
+            const memberPromises = team.members.map(m => 
+              axios.get(`http://localhost:3000/user/${m.userId}`, {
+                withCredentials: true
+              }).catch(err => {
+                console.error(`Error fetching member ${m.userId}:`, err);
+                return null;
+              })
             );
             const memberResponses = await Promise.all(memberPromises);
-            const members = memberResponses.filter((r) => r !== null).map((r) => r.data);
+            const members = memberResponses
+              .filter(r => r !== null)
+              .map(r => r.data);
             setMembersData(members);
           } catch (err) {
             console.error('Error fetching members:', err);
           }
         }
 
-        // Authenticated user
-        const { data: loggedData } = await axios.get('http://localhost:3000/user/auth', {
-          withCredentials: true
+        const {data: loggedData} = await axios.get("http://localhost:3000/user/auth", {
+            withCredentials: true
         });
         if (loggedData.loggedIn) {
           setAuthUser(loggedData.user);
@@ -70,11 +76,11 @@ const Team = (props) => {
           setAuthUser(null);
         }
 
-        // Games
-        const { data: games } = await axios.get(`http://localhost:3000/game/team/${id}`, {
-          withCredentials: true
-        });
-        if (games) setGamesData(games);
+        const {data: gamesData} = await axios.get(`http://localhost:3000/game/team/${id}`)
+        if (gamesData) {
+          setGamesData(gamesData);
+        }
+
       } catch (e) {
         console.log(e);
         setError(e.message || 'Error loading team');
@@ -88,10 +94,21 @@ const Team = (props) => {
 
   const logged = !!authUser;
 
-  const isOwner = (() => {
-    if (!logged || !authUser || !teamData) return false;
-    return String(teamData.owner) === String(authUser._id);
-  })();
+  const possibleOwnerIds = [
+    teamData.ownerId,
+    teamData.owner,
+    teamData.teamOwnerId,
+    teamData.creatorId,
+    teamData.creator,
+    teamData.createdBy,
+    teamData.userId,
+    teamData.user_id
+  ]
+    .filter(Boolean)
+    .map(String);
+  console.log(teamData.owner, authUser._id)
+  return teamData.owner === authUser._id;
+})();
 
   async function handleJoinRequest() {
     if (!logged || !authUser) {
@@ -257,34 +274,75 @@ const Team = (props) => {
           <p>No games yet.</p>
         )}
 
+        <h2>Team Owner:</h2>
+        {ownerData ? (
+          <p>
+            <Link to={`/users/${ownerData._id}`}>
+              {ownerData.username} ({ownerData.firstName} {ownerData.lastName})
+            </Link>
+          </p>
+        ) : (
+          <p>Loading owner...</p>
+        )}
+
+        <h2>Team Members ({membersData.length}):</h2>
+        {membersData.length > 0 ? (
+          <ul>
+            {membersData.map(member => (
+              <li key={member._id}>
+                <Link to={`/users/${member._id}`}>
+                  {member.username} ({member.firstName} {member.lastName})
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No members yet.</p>
+        )}
+
+        <h2>Game History:</h2>
+        {gamesData.length > 0 ? (
+          <ul>
+            {gamesData.map(game => (
+              <li key={game._id}>
+                <Link to={`/games/${game._id}`}>
+                  {game.team1.name} vs. ({game.team2.name} - {game.date.slice(0, 10)})
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No games yet.</p>
+        )}
+
         {message && <p className="success">{message}</p>}
         {error && <p className="error">{error}</p>}
-
         {logged && !isOwner && (
           <button className="btn btn-primary" onClick={handleJoinRequest}>
             Request to Join Team
           </button>
         )}
-
         {logged && isOwner && (
           <div className="pages">
             <div className="form">
               <form onSubmit={handleInvite} className="invite-form">
-                <label>
-                  Invite user by ID:
-                  <input
-                    type="text"
-                    value={inviteUserId}
-                    className="form-input"
-                    onChange={(e) => setInviteUserId(e.target.value)}
-                    placeholder="Enter an ID from User URL"
-                  />
-                </label>
-                <button type="submit" className="btn btn-primary">
-                  Add Member
-                </button>
-              </form>
+              
+              <label>
+                Invite user by ID:
+                <input
+                  type="text"
+                  value={inviteUserId}
+                  className="form-input"
+                  onChange={(e) => setInviteUserId(e.target.value)}
+                  placeholder="Enter an ID from User URL"
+                />
+              </label>
+              <button type="submit" className="btn btn-primary">
+                Add Member
+              </button>
+            </form>
             </div>
+            
 
             <Link className="link" to={`/teams/${id}/edit`}>
               Edit Team
