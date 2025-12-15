@@ -205,17 +205,17 @@ router.route('/:id')
     }
   });
 
-  router.route('/team/:teamId/upcoming')
+  router.route('/:userId/upcoming')
   .get(async (req, res) => {
     try {
-      helper.validText(req.params.teamId, 'team ID');
-      if (!ObjectId.isValid(req.params.teamId)) throw 'invalid object ID';
+      helper.validText(req.params.userId, 'user ID');
+      if (!ObjectId.isValid(req.params.userId)) throw 'invalid object ID';
     } catch (e) {
       return res.status(400).json({error: e});
     }
 
     try {
-      const upcomingGames = await games.getUpcomingGamesByTeamId(req.params.teamId);
+      const upcomingGames = await games.getUpcomingGamesByUserId(req.params.userId);
       return res.status(200).json(upcomingGames);
     } catch (e) {
       return res.status(500).json({error: `Failed to get upcoming games: ${e}`});

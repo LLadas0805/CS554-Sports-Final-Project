@@ -23,24 +23,24 @@ const App = () => {
   const [loading, setLoading] = useState(true);
 
   // Listens for notifications and logins on backend
-  useEffect(async () => {
+  useEffect(() => {
+    const fetchData = async () => {
+      const {data: loggedData} = await axios.get("http://localhost:3000/user/auth", {
+        withCredentials: true
+      });
+      if (loggedData.loggedIn) setUser(loggedData.user);
+      setLoading(false);
+    };
+
     socket.on("notification", (data) => {
-      if (data.message) {
-        alert(data.message);
-      }
+      if (data.message) alert(data.message);
     });
 
-    const {data: loggedData} = await axios.get("http://localhost:3000/user/auth", {
-        withCredentials: true
-    });
-    if (loggedData.loggedIn) {
-      setUser(loggedData.user)
-    }
-    
-    setLoading(false)
+    fetchData();
 
     return () => socket.off("notification");
   }, []);
+
 
   if (loading) {
     return null;

@@ -215,7 +215,7 @@ const seedGames = [
     state: "Texas",
     city: "Austin",
     location: { type: "Point", coordinates: [-97.7431, 30.2672] },
-    date: new Date("2025-03-20T16:00:00"),
+    date: new Date("2026-03-20T16:00:00"),
     createdAt: new Date()
   },
 

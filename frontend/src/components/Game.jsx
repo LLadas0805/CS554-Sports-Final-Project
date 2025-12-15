@@ -112,6 +112,9 @@ const Game = (props) => {
               Return To Game List
             </Link>
           </div>
+          <Link className='link' to='/'>
+            Return Home
+          </Link>
         </div>
       );
     }

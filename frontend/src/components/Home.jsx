@@ -47,7 +47,7 @@ function Home(props) {
 
           try {
             const eventsRes = await axios.get(
-              `http://localhost:3000/events/upcoming/${data.user._id}`,
+              `http://localhost:3000/game/${data.user._id}/upcoming`,
               { withCredentials: true }
             );
             setUpcomingEvents(eventsRes.data || []);
@@ -304,10 +304,10 @@ function Home(props) {
                         <ul>
                           {upcomingEvents.map((event) => (
                             <li key={event._id}>
-                              <div>
-                                <strong>{event.title || "Team Event"}</strong>
-                                {event.teamName && <> – {event.teamName}</>}
-                              </div>
+                              <Link to={`/games/${event._id}`}>
+                                  <strong>{event.team1.name} vs. {event.team2.name}</strong>
+                                  {event.teamName && <> – {event.teamName}</>} 
+                              </Link>
                               {event.date && (
                                 <div>
                                   {new Date(event.date).toLocaleString(undefined, {
@@ -316,7 +316,7 @@ function Home(props) {
                                   })}
                                 </div>
                               )}
-                              {event.location && <div>{event.location}</div>}
+                              <div>{event.city}, {event.state}</div>
                             </li>
                           ))}
                         </ul>

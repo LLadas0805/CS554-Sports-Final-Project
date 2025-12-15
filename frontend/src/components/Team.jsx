@@ -291,7 +291,11 @@ const Team = (props) => {
         <Link className="link" to="/teams">
           Return To Team List
         </Link>
+        
       </div>
+      <Link className='link' to='/'>
+          Return Home
+        </Link>
     </div>
   );
 };

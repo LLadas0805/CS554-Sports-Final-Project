@@ -102,7 +102,7 @@ export const getAllGames = async (user) => {
 
     const gameCollection = await games();
     const teamCollection = await teams();
-    let gameList = await gameCollection.find({}).toArray();
+    let gameList = await gameCollection.find({}).sort({ date: -1 }).toArray();
     let teamList = await teamCollection.find({}).toArray() || [];
     if (!gameList) throw 'Could not get any games';
 
@@ -233,33 +233,40 @@ export const getGamesByTeamId = async (teamId) => {
     const gameCollection = await games();
     let gameList = await gameCollection.find({
         $or: [
-            {'team1._id': new ObjectId(teamId)},
-            {'team2._id': new ObjectId(teamId)}
+            { 'team1._id': new ObjectId(teamId) },
+            { 'team2._id': new ObjectId(teamId) }
         ]
-    }).toArray();
+    })
+    .sort({ date: -1 }) 
+    .toArray();
     return gameList;
 }
 
-export const getUpcomingGamesByTeamId = async (teamId) => { //future events
-    teamId = helper.validText(teamId, 'team ID');
-    if (!ObjectId.isValid(teamId)) throw 'invalid object ID';
+export const getUpcomingGamesByUserId = async (userId) => { // future events for a user
+    userId = helper.validText(userId, 'user ID');
+    if (!ObjectId.isValid(userId)) throw 'invalid object ID';
 
     const gameCollection = await games();
+    const teamCollection = await teams()
+
+    const userTeams = await teamCollection.find({ members: new ObjectId(userId) }).toArray();
+    const teamIds = userTeams.map(t => t._id);
+    if (teamIds.length === 0) return []
+
     const now = new Date();
 
     let upcomingGames = await gameCollection.find({
         $and: [
-            {
-                $or: [
-                    {'team1._id': new ObjectId(teamId)},
-                    {'team2._id': new ObjectId(teamId)}
-                ]
-            },
-            {
-                date: { $gte: now } //upcoming only
-            }
+            { $or: [
+                { 'team1._id': { $in: teamIds } },
+                { 'team2._id': { $in: teamIds } }
+            ] },
+            { date: { $gte: now } } 
         ]
-    }).sort({ date: 1 }).toArray();
+    })
+    .sort({ date: 1 }) 
+    .toArray();
 
     return upcomingGames;
 };
+
