@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import NotFound from './NotFound';
 import axios from 'axios';
-import { Link, useParams } from 'react-router-dom';
+import {Link, useParams, useNavigate} from 'react-router-dom';
 
 const Team = (props) => {
   const { id } = useParams();
@@ -17,6 +17,7 @@ const Team = (props) => {
   const [membersData, setMembersData] = useState([]);
   const [gamesData, setGamesData] = useState([])
 
+  
   useEffect(() => {
     async function fetchData() {
       try {
@@ -24,11 +25,12 @@ const Team = (props) => {
         setError('');
         setMessage('');
 
-        const { data: team } = await axios.get(`http://localhost:3000/team/${id}`, {
-          withCredentials: true
+        const {data: team} = await axios.get(`http://localhost:3000/team/${id}`, {
+            withCredentials: true
         });
 
-        if (team.error) {
+        
+        if (team.error){
           throw new Error(team.error);
         }
 
@@ -71,9 +73,9 @@ const Team = (props) => {
             withCredentials: true
         });
         if (loggedData.loggedIn) {
-          setAuthUser(loggedData.user);
+            setAuthUser(loggedData.user);
         } else {
-          setAuthUser(null);
+            setAuthUser(null);
         }
 
         const {data: gamesData} = await axios.get(`http://localhost:3000/game/team/${id}`)
@@ -92,7 +94,14 @@ const Team = (props) => {
     fetchData();
   }, [id]);
 
+
   const logged = !!authUser;
+  
+  
+const isOwner = (() => {
+  if (!logged || !authUser || !teamData){
+    return false;
+  }
 
   const possibleOwnerIds = [
     teamData.ownerId,
@@ -111,7 +120,7 @@ const Team = (props) => {
 })();
 
   async function handleJoinRequest() {
-    if (!logged || !authUser) {
+    if (!logged || !authUser){
       setMessage('');
       setError('You must be logged in to request to join this team.');
       return;
@@ -128,7 +137,8 @@ const Team = (props) => {
       setMessage('Join request sent!');
     } catch (e) {
       console.error(e);
-      setError(e.response?.data?.error || e.message || 'Failed to send join request');
+      const msg = e.response?.data?.error || e.message || 'Failed to send join request';
+      setError(msg);
     }
   }
 
@@ -147,51 +157,37 @@ const Team = (props) => {
       setMessage('User added to team!');
       setInviteUserId('');
 
+    
       const { data: updated } = await axios.get(`http://localhost:3000/team/${id}`, {
         withCredentials: true
       });
+
       setTeamData(updated);
-    } catch (e) {
+
+    } catch (e){
       console.error(e);
-      setError(e.response?.data?.error || e.message || 'Failed to invite user');
+      const msg = e.response?.data?.error || e.message || 'Failed to send join request';
+      setError(msg);
     }
   }
 
-  async function handleRemoveMember(memberId) {
-    if (!authUser) {
-      setError('You must be logged in to perform this action.');
-      return;
-    }
-
-    try {
-      setError('');
-      setMessage('');
-      await axios.delete(`http://localhost:3000/team/members/${id}/${memberId}`, {
-        withCredentials: true
-      });
-
-      setTeamData((prev) => {
-        if (!prev) return prev;
-        const newMembers = Array.isArray(prev.members)
-          ? prev.members.filter((m) => String(m) !== memberId)
-          : [];
-        return { ...prev, members: newMembers };
-      });
-
-      setMembersData((prev) => prev.filter((m) => String(m._id) !== memberId));
-      setMessage('Member updated');
-    } catch (e) {
-      console.error('Error removing member:', e);
-      setError(e.response?.data?.error || e.message || 'Failed to remove member');
-    }
+  if (loading) {
+    return (
+      <div>
+        <h2>Loading....</h2>
+      </div>
+    );
   }
-
-  if (loading) return <h2>Loading...</h2>;
-  if (!teamData) return <NotFound message={error || 'Team Not Found!'} />;
+  
+  if (!teamData){
+    return <NotFound message={error || 'Team Not Found!'} />;
+  }
 
   const { description, city, state, preferredSports, experience, name, teamName } = teamData;
+
   const displayName = name || teamName || 'Unnamed Team';
 
+  
   return (
     <div>
       <h1>{displayName}</h1>
@@ -210,69 +206,11 @@ const Team = (props) => {
         <h2 className="tag">Skill Level: {experience}</h2>
 
         <h2>Preferred Sports:</h2>
-        <p>{preferredSports?.length > 0 ? preferredSports.join(', ') : 'None listed'}</p>
-
-        <h2>Team Owner:</h2>
-        {ownerData ? (
-          <p>
-            <Link to={`/users/${ownerData._id}`}>
-              {ownerData.username} ({ownerData.firstName} {ownerData.lastName})
-            </Link>
-          </p>
-        ) : (
-          <p>Loading owner...</p>
-        )}
-
-        <h2>Team Members:</h2>
-        {membersData.length > 0 ? (
-          <ul>
-            {membersData.map((member) => {
-              const memberIdStr = String(member._id);
-              const isSelf = authUser && authUser._id === memberIdStr;
-              const isOwnerMember = teamData.owner && String(teamData.owner) === memberIdStr;
-              return (
-                <li key={member._id}>
-                  <Link to={`/users/${member._id}`}>
-                    {member.username} ({member.firstName} {member.lastName})
-                  </Link>
-                  {logged && isOwner && !isOwnerMember && (
-                    <button
-                      onClick={async () => await handleRemoveMember(memberIdStr)}
-                      style={{ marginLeft: 'auto', background: 'transparent', border: 'none', cursor: 'pointer' }}
-                    >
-                      Remove
-                    </button>
-                  )}
-                  {logged && isSelf && !isOwnerMember && (
-                    <button
-                      onClick={async () => await handleRemoveMember(memberIdStr)}
-                      style={{ marginLeft: 'auto', background: 'transparent', border: 'none', cursor: 'pointer' }}
-                    >
-                      Leave
-                    </button>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <p>No members yet.</p>
-        )}
-
-        <h2>Game History:</h2>
-        {gamesData.length > 0 ? (
-          <ul>
-            {gamesData.map((game) => (
-              <li key={game._id}>
-                <Link to={`/games/${game._id}`}>
-                  {game.team1.name} vs. {game.team2.name} - {game.date.slice(0, 10)}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No games yet.</p>
-        )}
+        <p>
+          {preferredSports && preferredSports.length > 0
+            ? preferredSports.join(', ')
+            : 'None listed'}
+        </p>
 
         <h2>Team Owner:</h2>
         {ownerData ? (
@@ -357,5 +295,4 @@ const Team = (props) => {
     </div>
   );
 };
-
 export default Team;
