@@ -14,23 +14,19 @@ const Game = (props) => {
     async function fetchData() {
       try {
         const { data: gameData } = await axios.get(`http://localhost:3000/game/${id}`, { withCredentials: true });
-        const { data: teamList } = await axios.get(`http://localhost:3000/team/`, { withCredentials: true } );
 
-        if (gameData.error) throw "error fetching game";
-        if (teamList.error) throw "Error fetching teams";
+        if (!gameData || gameData.error) throw "error fetching game";
+
+       
+        const team1Id = String(gameData.team1._id);
+        const team2Id = String(gameData.team2._id);
+        const team1Name = gameData.team1.name || gameData.team1.teamName || '';
+        const team2Name = gameData.team2.name || gameData.team2.teamName || '';
 
         setGame({
           ...gameData,
-          team1: {
-            _id: gameData.team1._id,
-            score: gameData.team1.score,
-            name: teamList.find((team) => team._id === gameData.team1._id).teamName,
-          },
-          team2: {
-            _id: gameData.team2._id,
-            score: gameData.team2.score,
-            name: teamList.find((team) => team._id === gameData.team2._id).teamName,
-          }
+          team1: { _id: team1Id, score: gameData.team1.score, name: team1Name },
+          team2: { _id: team2Id, score: gameData.team2.score, name: team2Name }
         });
 
         setLoading(false);

@@ -46,7 +46,7 @@ export const createGame = async (
         _id: new ObjectId(team2Id)
     });
 
-    if (!existingTeam2) throw "Team 1 does not exist";
+    if (!existingTeam2) throw "Team 2 does not exist";
 
     if(!existingTeam1.owner || !existingTeam2.owner) throw "The playing teams do not have owner"
 
@@ -66,11 +66,11 @@ export const createGame = async (
     }
 
     const newGame = {
-        team1: {_id: new ObjectId(team1Id), score: score1 || null},
-        team2: {_id: new ObjectId(team2Id), score: score2 || null},
-        sport,
-        state,
-        city,
+        team1: {_id: new ObjectId(team1Id), name: existingTeam1.teamName || existingTeam1.teamName, score: score1 || null},
+        team2: {_id: new ObjectId(team2Id), name: existingTeam2.teamName || existingTeam2.teamName, score: score2 || null},
+        sport: newSport,
+        state: newState,
+        city: newCity,
         location,
         date: newDate,
         createdAt: new Date()
@@ -78,15 +78,11 @@ export const createGame = async (
 
     const gameCollection = await games();
     const gameInsert = await gameCollection.insertOne(newGame);
-    if (!gameInsert.acknowledged || !gameInsert.insertedId) throw "Could not add team";
+    if (!gameInsert.acknowledged || !gameInsert.insertedId) throw "Could not add game";
 
-    return {
-        team1: gameInsert.team1,
-        username: gameInsert.team2,
-        state: gameInsert.state,
-        city: gameInsert.city,
-        sport: gameInsert.sport,
-    };
+    const inserted = await gameCollection.findOne({ _id: gameInsert.insertedId });
+    if (inserted) inserted._id = inserted._id.toString();
+    return inserted;
 
 };
 
@@ -196,6 +192,7 @@ export const updateGame = async(
             type: "Point",
             coordinates: [lon, lat]
         }
+
 
         const team1 = await teamCollection.findOne({ _id: new ObjectId(existingGame.team1._id) });
         const team2 = await teamCollection.findOne({ _id: new ObjectId(existingGame.team2._id) });

@@ -158,50 +158,72 @@ function Home(props) {
                       ) : (
                         <ul>
                           {activeTeams.map((team) => (
-                            <Link to={`/teams/${team._id}`}>
-                              {team.teamName} {team.owner === loggedId && "(Owner)"}
-                            </Link>
+                            <li key={team._id}>
+                              <Link to={`/teams/${team._id}`}>
+                                {team.teamName} {team.owner === loggedId && "(Owner)"}
+                              </Link>
+                            </li>
                           ))}
                         </ul>
                       )}
                     </section>
 
 
-                    <h2>Pending Team Invites</h2>
-                    {pendingInvites.length === 0 ? (
-                      <p>You have no pending invites.</p>
-                    ) : (
-                      <ul>
-                        {pendingInvites.map((invite) => (
-                          <li key={invite._id}>
-                            <div>
-                              {/* Team name / info */}
-                              {invite.teamName ? (
-                                <>
-                                  Invite to join <strong>{invite.teamName}</strong>
-                                  {invite.inviterName && <> from {invite.inviterName}</>}
-                                </>
-                              ) : (
-                                <>Team invite (ID: {invite.teamId})</>
-                              )}
-                            </div>
+                              {/* Buttons */}
+                              <div style={{ marginTop: "0.5rem" }}>
+                                <button onClick={() => handleAcceptInvite(invite)}>
+                                  Accept
+                                </button>
+                                <button
+                                  onClick={() => handleDeclineInvite(invite)}
+                                  style={{ marginLeft: "0.5rem" }}
+                                >
+                                  Decline
+                                </button>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </section>
 
-                            {/* Buttons */}
-                            <div style={{ marginTop: "0.5rem" }}>
-                              <button onClick={() => handleAcceptInvite(invite)}>
-                                Accept
-                              </button>
-                              <button
-                                onClick={() => handleDeclineInvite(invite)}
-                                style={{ marginLeft: "0.5rem" }}
-                              >
-                                Decline
-                              </button>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                    <section className="home-section">
+                      <h2>Team Join Requests:</h2>
+                      {pendingRequests.length === 0 ? (
+                        <p>You have no join requests.</p>
+                      ) : (
+                        <ul>
+                          {pendingRequests.map((request) => (
+                            <li key={request._id}>
+                              <div>
+                                {/* User name / info */}
+                                {request.userName ? (
+                                  <>
+                                    Request to join <strong>{request.teamName}</strong> from <strong>{request.userName}</strong>
+                                  </>
+                                ) : (
+                                  <>Team join request (ID: {request.userId})</>
+                                )}
+                              </div>
+
+                              {/* Buttons */}
+                              <div style={{ marginTop: "0.5rem" }}>
+                                <button onClick={() => handleAcceptRequest(request)}>
+                                  Accept
+                                </button>
+                                <button
+                                  onClick={() => handleDeclineRequest(request)}
+                                  style={{ marginLeft: "0.5rem" }}
+                                >
+                                  Decline
+                                </button>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </section>
+                    
                 </div>
             ) : (
                 <div className="pages">
