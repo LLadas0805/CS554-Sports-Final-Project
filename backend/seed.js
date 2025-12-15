@@ -185,8 +185,8 @@ const seedTeams = [
 
 const seedGames = [
   {
-    team1: { _id: CA_TEAM_ID, score: 72 },
-    team2: { _id: new ObjectId(TX_TEAM_ID), score: 65 },
+    team1: { _id: CA_TEAM_ID, name: "Golden Gate Ballers", score: 72 },
+    team2: { _id: TX_TEAM_ID, name: "Austin Racqueteers", score: 65 },
     sport: "Basketball",
     state: "California",
     city: "San Francisco",
@@ -198,8 +198,8 @@ const seedGames = [
   },
 
   {
-    team1: { _id: NY_TEAM_ID, score: 3 },
-    team2: { _id: new ObjectId(IL_TEAM_ID), score: 2 },
+    team1: { _id: NY_TEAM_ID, name: "NYC Thunder FC", score: 3 },
+    team2: { _id: IL_TEAM_ID, name: "Chicago Flyers", score: 2 },
     sport: "Soccer",
     state: "New York",
     city: "New York",
@@ -209,8 +209,8 @@ const seedGames = [
   },
 
   {
-    team1: { _id: TX_TEAM_ID, score: 21 },
-    team2: { _id: new ObjectId(IL_TEAM_ID), score: 18 },
+    team1: { _id: TX_TEAM_ID, name: "Austin Racqueteers", score: 21 },
+    team2: { _id: IL_TEAM_ID, name: "Chicago Flyers", score: 18 },
     sport: "Badminton",
     state: "Texas",
     city: "Austin",
@@ -220,8 +220,8 @@ const seedGames = [
   },
 
   {
-    team1: { _id: new ObjectId(IL_TEAM_ID), score: 10 },
-    team2: { _id: new ObjectId(NY_TEAM_ID), score: 8 },
+    team1: { _id: IL_TEAM_ID, name: "Chicago Flyers", score: 10 },
+    team2: { _id: NY_TEAM_ID, name: "NYC Thunder FC", score: 8 },
     sport: "Ultimate Frisbee",
     state: "Illinois",
     city: "Chicago",
