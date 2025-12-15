@@ -13,6 +13,9 @@ const Team = (props) => {
   const [message, setMessage] = useState('');
 
   const [inviteUserId, setInviteUserId] = useState('');
+  const [ownerData, setOwnerData] = useState(null);
+  const [membersData, setMembersData] = useState([]);
+  const [gamesData, setGamesData] = useState([])
 
   
   useEffect(() => {
@@ -33,16 +36,51 @@ const Team = (props) => {
 
         setTeamData(team);
 
+        // owner details
+        if (team.owner) {
+          try {
+            const {data: owner} = await axios.get(`http://localhost:3000/user/${team.owner}`, {
+              withCredentials: true
+            });
+            setOwnerData(owner);
+          } catch (err) {
+            console.error('Error fetching owner:', err);
+          }
+        }
+
+        // members details
+        if (team.members && team.members.length > 0) {
+          try {
+            const memberPromises = team.members.map(m => 
+              axios.get(`http://localhost:3000/user/${m.userId}`, {
+                withCredentials: true
+              }).catch(err => {
+                console.error(`Error fetching member ${m.userId}:`, err);
+                return null;
+              })
+            );
+            const memberResponses = await Promise.all(memberPromises);
+            const members = memberResponses
+              .filter(r => r !== null)
+              .map(r => r.data);
+            setMembersData(members);
+          } catch (err) {
+            console.error('Error fetching members:', err);
+          }
+        }
+
         const {data: loggedData} = await axios.get("http://localhost:3000/user/auth", {
             withCredentials: true
         });
-
-
-
         if (loggedData.loggedIn) {
             setAuthUser(loggedData.user);
         } else {
             setAuthUser(null);
+        }
+
+        const {data: gamesData} = await axios.get(`http://localhost:3000/game/team/${id}`)
+        if (gamesData) {
+          setGamesData(gamesData);
         }
 
       } catch (e) {
@@ -77,8 +115,8 @@ const isOwner = (() => {
   ]
     .filter(Boolean)
     .map(String);
-
-  return possibleOwnerIds.includes(String(authUser._id));
+  console.log(teamData.owner, authUser._id)
+  return teamData.owner === authUser._id;
 })();
 
   async function handleJoinRequest() {
@@ -165,10 +203,7 @@ const isOwner = (() => {
           </h2>
         </div>
 
-        <h2 className="tag">Skill Level:</h2>
-        <div className="row">
-          <h3 className="tag">{experience}</h3>
-        </div>
+        <h2 className="tag">Skill Level: {experience}</h2>
 
         <h2>Preferred Sports:</h2>
         <p>
@@ -177,32 +212,75 @@ const isOwner = (() => {
             : 'None listed'}
         </p>
 
+        <h2>Team Owner:</h2>
+        {ownerData ? (
+          <p>
+            <Link to={`/users/${ownerData._id}`}>
+              {ownerData.username} ({ownerData.firstName} {ownerData.lastName})
+            </Link>
+          </p>
+        ) : (
+          <p>Loading owner...</p>
+        )}
+
+        <h2>Team Members ({membersData.length}):</h2>
+        {membersData.length > 0 ? (
+          <ul>
+            {membersData.map(member => (
+              <li key={member._id}>
+                <Link to={`/users/${member._id}`}>
+                  {member.username} ({member.firstName} {member.lastName})
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No members yet.</p>
+        )}
+
+        <h2>Game History:</h2>
+        {gamesData.length > 0 ? (
+          <ul>
+            {gamesData.map(game => (
+              <li key={game._id}>
+                <Link to={`/games/${game._id}`}>
+                  {game.team1.name} vs. ({game.team2.name} - {game.date.slice(0, 10)})
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No games yet.</p>
+        )}
+
         {message && <p className="success">{message}</p>}
         {error && <p className="error">{error}</p>}
-
-        
         {logged && !isOwner && (
           <button className="btn btn-primary" onClick={handleJoinRequest}>
             Request to Join Team
           </button>
         )}
-
         {logged && isOwner && (
           <div className="pages">
-            <form onSubmit={handleInvite} className="invite-form">
+            <div className="form">
+              <form onSubmit={handleInvite} className="invite-form">
+              
               <label>
                 Invite user by ID:
                 <input
                   type="text"
                   value={inviteUserId}
+                  className="form-input"
                   onChange={(e) => setInviteUserId(e.target.value)}
-                  placeholder="User ID"
+                  placeholder="Enter an ID from User URL"
                 />
               </label>
               <button type="submit" className="btn btn-primary">
                 Add Member
               </button>
             </form>
+            </div>
+            
 
             <Link className="link" to={`/teams/${id}/edit`}>
               Edit Team

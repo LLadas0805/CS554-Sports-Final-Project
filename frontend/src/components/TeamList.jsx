@@ -2,6 +2,8 @@ import React, {useState, useEffect} from 'react';
 import GenericItem from './GenericItem';
 import NotFound from './NotFound';
 import axios from 'axios';
+import sports from '../../../shared/enums/sports.js';
+import skills from '../../../shared/enums/skills.js';
 import {Link, useParams, useNavigate} from 'react-router-dom';
 
 const TeamList = () => {
@@ -87,55 +89,67 @@ const TeamList = () => {
       <Link className="btn btn-primary" to="/teams/new">
         + Create Team
       </Link>
-
+      
       <div className="filters">
         <div className="form-group-inline">
-          <label htmlFor="name-filter">Name</label>
+          <label htmlFor="name-filter">Team Name</label>
           <input
-            id="name-filter"
-            type="text"
-            className="form-input"
-            placeholder="Filter by team name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+          id="name-filter"
+          type="text"
+          className="form-input"
+          placeholder="Filter by team name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           />
-        </div>
+      </div>
 
-        <div className="form-group-inline">
-          <label htmlFor="sport-filter">Sport</label>
-          <input
-            id="sport-filter"
-            type="text"
-            className="form-input"
-            placeholder="Sport"
-            value={sport}
-            onChange={(e) => setSport(e.target.value)}
-          />
-        </div>
+      <div className="form-group-inline">
+      <label>Distance (miles):</label>
+      <select
+          value={distance}
+          onChange={(e) => setDistance(e.target.value)}
+          className="form-input"
+      >
+          <option value="">Enter a distance range</option>
+          <option value="15">Close (0-15 miles)</option>
+          <option value="30">Moderate (15-30 miles)</option>
+          <option value="100">Far (30-100 miles)</option>
+      </select>
+      </div>
 
-        <div className="form-group-inline">
-          <label htmlFor="skill-filter">Skill Level</label>
-          <input
-            id="skill-filter"
-            type="text"
-            className="form-input"
-            placeholder="Skill level"
-            value={skillLevel}
-            onChange={(e) => setSkillLevel(e.target.value)}
-          />
-        </div>
+      <div className="form-group-inline">
+          <label>Skill Level:</label>
+          <select
+              value={skillLevel}
+              onChange={(e) => setSkillLevel(e.target.value)}
+              className="form-input"
+          >
+              <option value = ""> Enter a Skill Level</option>
+              {skills.map((lvl) => (
+                <option key = {lvl} value = {lvl}>
+                  {lvl}
+                </option>
+              ))}
+          </select>
+      </div>
 
-        <div className="form-group-inline">
-          <label htmlFor="distance-filter">Distance (miles)</label>
-          <input
-            id="distance-filter"
-            type="number"
-            className="form-input"
-            placeholder="Distance"
-            value={distance}
-            onChange={(e) => setDistance(e.target.value)}
-          />
-        </div>
+      <div className="form-group-inline">
+          <label>Preferred Sport:</label>
+          <select
+          id="sport"
+          name="sport"
+          value={sport}
+          onChange={(e) => setSport(e.target.value)}
+          className="form-input"
+          >
+          <option value="">Select a sport</option>
+          {sports.map((sport) => (
+              <option key={sport} value={sport}>
+                  {sport}
+              </option>
+          ))}
+          </select>
+      </div>
 
         <button
           className="btn btn-primary filter-btn"
@@ -152,7 +166,7 @@ const TeamList = () => {
           <GenericItem
             key={team._id}
             name={team.name || team.teamName || 'Unnamed Team'}
-            subtext={team.description}
+            subtext={`${team.description.slice(0 , 30) + '...'}`}
             additional={`${team.city}, ${team.state}`}
             link={`/teams/${team._id}`}
           />

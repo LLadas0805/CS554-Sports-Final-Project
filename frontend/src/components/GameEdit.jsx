@@ -138,41 +138,85 @@ function GameEdit() {
                     <form onSubmit={handleSubmit}>
 
                         <div className="form-group">
-                            <label htmlFor="state">Team1</label>
+                            <label htmlFor="team1Id">Team 1</label>
                             <select
                               id="team1Id"
                               name="team1Id"
                               value={formData.team1Id}
                               onChange={handleChange}
                               className="form-input"
+                              disabled={isEditPage}
                             >
                                 <option value="">Select a Team</option>
                                 {teams.map((team) => (
                                   <option key={team._id} value={team._id}>
-                                    {team.name}
+                                    {team.teamName}
                                   </option>
                                 ))}
                             </select>
                         </div>
-
                         <div className="form-group">
-                            <label htmlFor="state">Team2</label>
+                            <label htmlFor="score1">Score 1</label>
+                            <input
+                              id="score1"
+                              name="score1"
+                              type="number"
+                              min="0"
+                              max="100"
+                              className="form-input"
+                              value={formData.score1}
+                              onChange={handleChange}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="team2Id">Team 2</label>
                             <select
                               id="team2Id"
                               name="team2Id"
                               value={formData.team2Id}
                               onChange={handleChange}
                               className="form-input"
+                              disabled={isEditPage}
                             >
                                 <option value="">Select a Team</option>
                                 {teams.map((team) => (
                                   <option key={team._id} value={team._id}>
-                                      {team.name}
+                                      {team.teamName}
                                   </option>
                                 ))}
                             </select>
                         </div>
-
+                        
+                        <div className="form-group">
+                            <label htmlFor="score2">Score 2</label>
+                            <input
+                              id="score2"
+                              name="score2"
+                              type="number"
+                              min="0"
+                              max="100"
+                              className="form-input"
+                              value={formData.score2}
+                              onChange={handleChange}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Sport</label>
+                            <select
+                              id="sport"
+                              name="sport"
+                              className="form-input"
+                              value={formData.sport}
+                              onChange={handleChange}
+                            >
+                                <option value="">Select a sport</option>
+                                {sports.map((sport) => (
+                                  <option key={sport} value={sport}>
+                                      {sport}
+                                  </option>
+                                ))}
+                            </select>
+                        </div>
                         <div className="form-group">
                             <label htmlFor="state">State</label>
                             <select
@@ -210,53 +254,6 @@ function GameEdit() {
                                   ))}
                             </select>
                         </div>
-
-                        <div className="form-group">
-                            <label htmlFor="score1">Score1</label>
-                            <input
-                              id="score1"
-                              name="score1"
-                              type="number"
-                              min="0"
-                              max="100"
-                              className="form-input"
-                              value={formData.score1}
-                              onChange={handleChange}
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="score2">Score2</label>
-                            <input
-                              id="score2"
-                              name="score2"
-                              type="number"
-                              min="0"
-                              max="100"
-                              className="form-input"
-                              value={formData.score2}
-                              onChange={handleChange}
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label>Sport</label>
-                            <select
-                              id="sport"
-                              name="sport"
-                              className="form-input"
-                              value={formData.sport}
-                              onChange={handleChange}
-                            >
-                                <option value="">Select a sport</option>
-                                {sports.map((sport) => (
-                                  <option key={sport} value={sport}>
-                                      {sport}
-                                  </option>
-                                ))}
-                            </select>
-                        </div>
-
                         <div className="form-group">
                             <label htmlFor="date">Date</label>
                             <input

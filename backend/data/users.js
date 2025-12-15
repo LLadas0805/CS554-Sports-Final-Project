@@ -112,21 +112,12 @@ export const register = async (
 };
 
 export const login = async (username, password) => {
-  
-    if (typeof username !== 'string' || username.trim().length === 0) {
-        throw 'Username must be provided';
-    }
-    if (typeof password !== 'string' || password.trim().length === 0) {
-      throw 'Password must be provided';
-    }
-    username = username.trim();
-    const newPassword = password.trim();
-    
+
     const userCollection = await users();
     let user = await userCollection.findOne({username:{$regex:`^${username}$`,$options:'i'} });
     if (!user || user === null) throw 'Either the username or password is invalid';
 
-    const comparePassword = await bcrypt.compare(newPassword, user.password);
+    const comparePassword = await bcrypt.compare(password, user.password);
     if (!comparePassword) throw 'Either the username or password is invalid';
 
     return {_id: user._id, name: user.name,
@@ -251,6 +242,8 @@ export const updateUser = async(
     const newFirstName = helper.validName(firstName, "First");
     const newLastName = helper.validName(lastName, "Last");
     const newUserName = helper.validUsername(username);
+    const newPassword = helper.validPassword(password);
+    helper.matchingPassword(newPassword, confirmPassword);
     const newEmail = helper.validEmail(email);
     const newNumber = helper.validNumber(phoneNumber)
     const newState = helper.validText(state, "state")
@@ -284,7 +277,6 @@ export const updateUser = async(
 
     const userCollection = await users();
     const existingUser = await userCollection.findOne({ 
-      _id: { $ne: new ObjectId(userId)} ,
       $or: [
         { username: { $regex: `^${newUserName}$`, $options: "i" } },
         { phoneNumber: { $regex: `^${newNumber}$`, $options: "i" } },
@@ -405,7 +397,7 @@ export const removeTeamInvite = async (userId, teamId) => {
     const teamCollection = await teams();
 
     const user = await userCollection.findOne({ _id: new ObjectId(userId) });
-    if (!user) throw 'User not found';
+    if (!user) throw 'User not found'; //small fix for proper validation
 
     const team = await teamCollection.findOne({ _id: new ObjectId(teamId) });
     if (!team) throw 'Team not found';
@@ -414,47 +406,35 @@ export const removeTeamInvite = async (userId, teamId) => {
     
     await userCollection.updateOne(
         { _id: new ObjectId(userId) },
-        { $pull: { teamInvites: { teamId: new ObjectId(teamId) } } }
+        { $pull: { teamInvites: { teamId: new ObjectId(teamId), requestedAt: new Date() } } }
     );
 
     return { removed: userId, teamId };
 };
 
-export const acceptTeamInvite = async (userId, teamId) => {
+export const getPendingTeamInvites = async (userId) => {
   userId = helper.validText(userId, 'user ID');
-  teamId = helper.validText(teamId, 'team ID');
-
-  if (!ObjectId.isValid(userId)) throw 'Invalid user ID';
-  if (!ObjectId.isValid(teamId)) throw 'Invalid team ID';
-
+  if (!ObjectId.isValid(userId)) throw 'invalid object ID';
   const userCollection = await users();
   const teamCollection = await teams();
-
-  const userObjectId = new ObjectId(userId);
-  const teamObjectId = new ObjectId(teamId);
-
-  const user = await userCollection.findOne({ _id: userObjectId });
+  const user = await userCollection.findOne({ _id: new ObjectId(userId) });
   if (!user) throw 'User not found';
-
-  const team = await teamCollection.findOne({ _id: teamObjectId });
-  if (!team) throw 'Team not found';
-
-  if (
-    !user.teamInvites ||
-    !user.teamInvites.some((inv) => inv.teamId.toString() === teamId.toString())
-  ) {
-    throw 'No invite from this team';
+  if (!user.teamInvites || user.teamInvites.length === 0) {
+      return [];
   }
-
-  await teamCollection.updateOne(
-    { _id: teamObjectId },
-    { $addToSet: { members: userObjectId } }
-  );
-
-  await userCollection.updateOne(
-    { _id: userObjectId },
-    { $pull: { teamInvites: { teamId: teamObjectId } } }
-  );
-
-  return { accepted: true };
+  const teamIds = user.teamInvites.map(inv => inv.teamId);
+  const teamList = await teamCollection.find({
+      _id: { $in: teamIds }
+  }).toArray();
+  
+  const invitesWithTeamData = user.teamInvites.map(invite => {
+      const team = teamList.find(t => t._id.toString() === invite.teamId.toString());
+      return {
+          teamId: invite.teamId,
+          requestedAt: invite.requestedAt,
+          team: team || null
+      };
+  });
+  
+  return invitesWithTeamData;
 };

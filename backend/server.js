@@ -10,6 +10,7 @@ import http from 'http';
 import wrap from 'express-socket.io-session';
 import { RedisStore } from 'connect-redis';
 import { Server } from 'socket.io';
+import setupSocket from './socket/socket.js';
 import { initIndexes } from './config/indexes.js';
 
 app.use(express.json());
@@ -48,6 +49,8 @@ const io = new Server(server, {
   cors: { origin: "http://localhost:5173", credentials: true }
 });
 
+app.locals.io = io;
+
 io.use(wrap(sessionMiddleware, { autoSave: true }));
 
 io.on("connection", (socket) => {
@@ -59,11 +62,8 @@ io.on("connection", (socket) => {
   }
 
   socket.userId = userId;
+  socket.join(userId);
   console.log("Authenticated user connected:", socket.userId);
-
-  socket.on("chat message", (msg) => {
-    io.emit("chat message", { msg, sender: socket.userId });
-  });
 
   socket.on("disconnect", () => {
     console.log(`Client disconnected: ${socket.id}`);
@@ -71,6 +71,7 @@ io.on("connection", (socket) => {
 
 });
 
+setupSocket(io);
 
 initIndexes();
 

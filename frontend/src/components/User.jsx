@@ -1,13 +1,13 @@
 import React, {useState, useEffect} from 'react';
 import NotFound from './NotFound';
-import GenericItem from './GenericItem';
 import axios from 'axios';
 import {Link, useParams, useNavigate} from 'react-router-dom';
+import { socket } from "../socket";
 
 const User = (props) => {
   const [userData, setUserData] = useState(undefined);
-  const [teamsData, setTeamsData] = useState([])
   const [loading, setLoading] = useState(true);
+  const [activeTeams, setActiveTeams] = useState([]);
   const navigate = useNavigate();
   // Use this for loading certain elements like team invites/edit/delete
   const [logged, setLogged] = useState(false);
@@ -30,17 +30,21 @@ const User = (props) => {
             withCredentials: true
         });
 
-        const {data: teams} = await axios.get(`http://localhost:3000/team/members/${id}`, {
-            withCredentials: true
-        });
-
-        setTeamsData(teams);
+        console.log(loggedData);
 
         if (loggedData.loggedIn && loggedData.user._id === id) {
             setLogged(true);
         } else {
             setLogged(false)
         }
+
+        const teamsRes = await axios.get(
+            `http://localhost:3000/team/members/${id}`,
+            { withCredentials: true }
+          );
+
+        setActiveTeams(teamsRes.data || []);
+
         setLoading(false);
 
       } catch (e) {
@@ -58,6 +62,7 @@ const User = (props) => {
         });
       
         alert("Logout successful!");
+        socket.disconnect();
         navigate("/login");
     } catch (err) {
         alert("Logout failed!");
@@ -112,22 +117,22 @@ const User = (props) => {
                 ? userData.beginnerSports.join(", ")
                 : "None listed"}
             </p>
-            <h2>Current Teams:</h2>
-            <div className="items-container">
-                {teamsData.length === 0 ? (
-                    <h3>None</h3>
-                ) : (
-                    teamsData.map((team) => (
-                        <GenericItem
-                            key={team._id}
-                            name={team.teamName}
-                            subtext={`${team.description}`}
-                            additional={team.owner === userData._id ? "Owner" : "Member"}
-                            link={`/teams/${team._id}`}
-                        />
-                    ))
-                )}
-            </div>
+            
+            <h2>Active Teams</h2>
+              {activeTeams.length === 0 ? (
+                <p>None</p>
+              ) : (
+                <ul>
+                  {activeTeams.map((team) => (
+                    <li key={team._id}>
+                      <Link to={`/teams/${team._id}`}>
+                        {team.teamName} {team.owner === id && "(Owner)"}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
             {logged && (
                 <div className = "pages">
                     <Link className='link' to={`/users/edit/${id}`}>

@@ -135,23 +135,20 @@ const UserList = () => {
                         Apply Filters
                     </button>
                     </div>
-                    
+
                     <div className="items-container">
-                        {usersData.length === 0 ? (
-                            <h2>No users found</h2>
-                        ) : (
-                            usersData.map((user) => (
-                                <GenericItem
-                                    key={user._id}
-                                    name={user.username}
-                                    subtext={`${user.firstName} ${user.lastName}`}
-                                    additional={`${user.city}, ${user.state}`}
-                                    link={`/users/${user._id}`}
-                                />
-                            ))
-                        )}
+                        {usersData.map((user) => (
+                        <GenericItem
+                            key={user._id}
+                            name={`${user.username}`}
+                            subtext={`${user.firstName} ${user.lastName}`}
+                            additional={`${user.city}, ${user.state}`}
+                            link={`/users/${user._id}`}
+                        />
+                        ))}
                     </div>
                 <br></br>
+                
                 <Link className="link" to="/">Return Home</Link>
             </div>
         );

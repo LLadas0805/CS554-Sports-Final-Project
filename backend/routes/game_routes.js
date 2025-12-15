@@ -15,7 +15,7 @@ const router = Router();
 router.route('/')
   .get(cacheGames, async (req, res) => {
     try {
-      const gameList = await games.getAllGames();
+      const gameList = await games.getAllGames(req.session.user);
       await client.set("games", JSON.stringify(gameList));
       return res.status(200).json(gameList);
     } catch (e) {
@@ -25,7 +25,7 @@ router.route('/')
 
 router.route('/create')
   .post(accountVerify, async (req, res) => {
-    const {
+    let {
         team1Id,
         team2Id,
         state,
@@ -49,8 +49,11 @@ router.route('/create')
         const newSport = helper.validText(sport)
         if (!sports.includes(newSport)) throw `Invalid sport`;
 
-        if (!ObjectId.isValid(helper.validText(team1Id, 'Team 1 ID'))) throw 'Invalid team 1 ID';
-        if (!ObjectId.isValid(helper.validText(team2Id, 'Team 2 ID'))) throw 'Invalid team 2 ID';
+        team1Id = helper.validText(team1Id, 'Team 1 ID');
+        if (!ObjectId.isValid(team1Id)) throw 'Invalid team 1 ID';
+
+        team2Id = helper.validText(team2Id, 'Team 2 ID');
+        if (!ObjectId.isValid(team2Id)) throw 'Invalid team 2 ID';
 
         helper.validDate(date)
 
@@ -105,8 +108,6 @@ router.route('/:id')
   })
   .put(accountVerify, async(req, res) => {
     const {
-        team1Id,
-        team2Id,
         state,
         city,
         score1,
@@ -140,8 +141,6 @@ router.route('/:id')
       let updatedGame = await games.updateGame(
         req.params.id,
         req.session.user,
-        team1Id,
-        team2Id,
         state,
         city,
         score1,
@@ -182,6 +181,40 @@ router.route('/:id')
       } else {
         res.status(500).json({error: `Failed to delete game: ${e}`})
       }
+    }
+  });
+
+  router.route('/team/:teamId')
+  .get(async (req, res) => {
+    try {
+      helper.validText(req.params.teamId, 'team ID');
+      if (!ObjectId.isValid(req.params.teamId)) throw 'invalid object ID';
+    } catch (e) {
+      return res.status(400).json({error: e});
+    }
+
+    try {
+      const gamesTeamId = await games.getGamesByTeamId(req.params.teamId);
+      return res.status(200).json(gamesTeamId);
+    } catch (e) {
+      return res.status(500).json({error: `Failed to get games by ID: ${e}`});
+    }
+  });
+
+  router.route('/team/:teamId/upcoming')
+  .get(async (req, res) => {
+    try {
+      helper.validText(req.params.teamId, 'team ID');
+      if (!ObjectId.isValid(req.params.teamId)) throw 'invalid object ID';
+    } catch (e) {
+      return res.status(400).json({error: e});
+    }
+
+    try {
+      const upcomingGames = await games.getUpcomingGamesByTeamId(req.params.teamId);
+      return res.status(200).json(upcomingGames);
+    } catch (e) {
+      return res.status(500).json({error: `Failed to get upcoming games: ${e}`});
     }
   });
 

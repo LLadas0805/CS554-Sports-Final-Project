@@ -27,9 +27,11 @@ export const createGame = async (
     const newSport = helper.validText(sport)
     if (!sports.includes(newSport)) throw `Invalid sport`;
 
-    if (!ObjectId.isValid(helper.validText(team1Id, 'Team 1 ID'))) throw 'Invalid team 1 ID';
+    team1Id = helper.validText(team1Id, 'Team 1 ID');
+    if (!ObjectId.isValid(team1Id)) throw 'Invalid team 1 ID';
 
-    if (!ObjectId.isValid(helper.validText(team2Id, 'Team 2 ID'))) throw 'Invalid team 2 ID';
+    team2Id = helper.validText(team2Id, 'Team 2 ID');
+    if (!ObjectId.isValid(team2Id)) throw 'Invalid team 2 ID';
 
     const newDate = helper.validDate(date)
 
@@ -74,11 +76,12 @@ export const createGame = async (
 
     return {
         team1: gameInsert.team1,
-        team2: gameInsert.team2,
+        username: gameInsert.team2,
         state: gameInsert.state,
         city: gameInsert.city,
         sport: gameInsert.sport,
     };
+
 };
 
 export const getGameById = async (gameId) => {
@@ -93,13 +96,27 @@ export const getGameById = async (gameId) => {
     return game;
 };
 
-export const getAllGames = async () => {
+export const getAllGames = async (user) => {
 
     const gameCollection = await games();
+    const teamCollection = await teams();
     let gameList = await gameCollection.find({}).toArray();
+    let teamList = await teamCollection.find({}).toArray() || [];
     if (!gameList) throw 'Could not get any games';
 
-    return gameList;
+    return gameList.map(game => {
+      const game1Id = game.team1._id.toString();
+      const game2Id = game.team2._id.toString();
+      const userId = user._id.toString();
+
+      let canEditOrDelete = teamList.some(team => team._id.toString() === game1Id && team.owner.toString() === userId) &&
+        teamList.some(team => team._id.toString() === game2Id && team.owner.toString() === userId);
+
+      return {
+        ...game,
+        canEditOrDelete
+      }
+    });
 };
 
 export const deleteGame = async (gameId, user) => {
@@ -129,8 +146,6 @@ export const deleteGame = async (gameId, user) => {
 export const updateGame = async(
     gameId,
     user,
-    team1Id,
-    team2Id,
     state,
     city,
     score1,
@@ -169,16 +184,16 @@ export const updateGame = async(
             coordinates: [lon, lat]
         }
 
-        const team1 = await teamCollection.findOne({ _id: new ObjectId(team1Id) });
-        const team2 = await teamCollection.findOne({ _id: new ObjectId(team2Id) });
+        const team1 = await teamCollection.findOne({ _id: new ObjectId(existingGame.team1._id) });
+        const team2 = await teamCollection.findOne({ _id: new ObjectId(existingGame.team2._id) });
 
         if (!team1 || !team2) throw "One or both teams not found";
 
         if (team1.owner.toString() !== user._id.toString() && team2.owner.toString() !== user._id.toString()) throw 'User did not create this team and cannot update game'
 
         const updatedGameData = {
-            team1: {_id: new ObjectId(team1Id), score: score1 || null},
-            team2: {_id: new ObjectId(team2Id), score: score2 || null},
+            team1: {_id: new Object(team1._id), score: score1 || null},
+            team2: {_id: new Object(team2._id), score: score2 || null},
             sport,
             state,
             city,
@@ -189,7 +204,7 @@ export const updateGame = async(
 
 
         const gameExists = await getGameById(gameId);
-        if (!gameExists) throw 'game not found';
+        if (!gameExists || gameExists === null) throw 'game not found';
 
         let newGame = await gameCollection.findOneAndUpdate(
         {_id: new ObjectId(gameId)},
@@ -214,3 +229,27 @@ export const getGamesByTeamId = async (teamId) => {
     }).toArray();
     return gameList;
 }
+
+export const getUpcomingGamesByTeamId = async (teamId) => { //future events
+    teamId = helper.validText(teamId, 'team ID');
+    if (!ObjectId.isValid(teamId)) throw 'invalid object ID';
+
+    const gameCollection = await games();
+    const now = new Date();
+
+    let upcomingGames = await gameCollection.find({
+        $and: [
+            {
+                $or: [
+                    {'team1._id': new ObjectId(teamId)},
+                    {'team2._id': new ObjectId(teamId)}
+                ]
+            },
+            {
+                date: { $gte: now } //upcoming only
+            }
+        ]
+    }).sort({ date: 1 }).toArray();
+
+    return upcomingGames;
+};

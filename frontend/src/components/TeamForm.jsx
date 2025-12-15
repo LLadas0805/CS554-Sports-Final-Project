@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { createTeam, getTeamById, updateTeam, deleteTeam } from '../api/teamApi';
 
 import statesCities from '../../../shared/data/US_States_and_Cities.json' with { type: 'json' };
@@ -179,31 +179,34 @@ const TeamForm = ({ mode }) => {
       {error && <p className="error">{error}</p>}
 
       <form onSubmit={handleSubmit} className="form">
-        <label>
-          Team name
+        <div className="form-group">
+          <label htmlFor="name">Team name</label>
           <input
+            id="name"
             name="name"
             value={form.name}
             onChange={handleChange}
+            placeholder="e.g. Hoboken Hoopers"
             required
             className="form-input"
           />
-        </label>
-
-        <label>
-          Description
+        </div>
+        <div className="form-group">
+          <label htmlFor="description">Description</label>
           <textarea
+            id="description"
             name="description"
             value={form.description}
             onChange={handleChange}
             required
             className="form-input"
+            placeholder="What is this team about?"
           />
-        </label>
-
-        <label>
-          State
+        </div>
+        <div className="form-group">
+          <label htmlFor="state">State</label>
           <select
+            id="state"
             name="state"
             value={form.state}
             onChange={handleStateChange}
@@ -217,11 +220,11 @@ const TeamForm = ({ mode }) => {
               </option>
             ))}
           </select>
-        </label>
-
-        <label>
-          City
+        </div>
+        <div className="form-group">
+          <label htmlFor="city">City</label>
           <select
+            id="city"
             name="city"
             value={form.city}
             onChange={handleChange}
@@ -237,11 +240,11 @@ const TeamForm = ({ mode }) => {
                 </option>
               ))}
           </select>
-        </label>
-
-        <label>
-          Preferred sports
+        </div>
+        <div className="form-group">
+          <label htmlFor="sport-picker">Preferred sports</label>
           <select
+            id="sport-picker"
             name="sport-picker"
             value={selectedSport}
             onChange={(e) => handleAddSport(e.target.value)}
@@ -254,25 +257,24 @@ const TeamForm = ({ mode }) => {
               </option>
             ))}
           </select>
-        </label>
-
-        <div className="selected-sports">
-        {Array.isArray(form.preferredSports) &&
-            form.preferredSports.map((sport) => (
-            <button
-                key={sport}
-                type="button"
-                className="sports-buttons"
-                onClick={() => handleRemoveSport(sport)}
-            >
-                • {sport}
-            </button>
-            ))}
+          <div className="selected-sports">
+            {Array.isArray(form.preferredSports) &&
+              form.preferredSports.map((sport) => (
+                <button
+                  key={sport}
+                  type="button"
+                  className="sports-buttons"
+                  onClick={() => handleRemoveSport(sport)}
+                >
+                  • {sport}
+                </button>
+              ))}
+          </div>
         </div>
-
-        <label>
-          Skill level
+        <div className="form-group">
+          <label htmlFor="experience">Skill level</label>
           <select
+            id="experience"
             name="experience"
             value={form.experience}
             onChange={handleChange}
@@ -286,12 +288,14 @@ const TeamForm = ({ mode }) => {
               </option>
             ))}
           </select>
-        </label>
+        </div>
+        
+        <br></br>
 
         <button type="submit" disabled={saving}>
           {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Create team'}
         </button>
-
+      
         {isEdit && (
           <button
             type="button"
@@ -303,6 +307,12 @@ const TeamForm = ({ mode }) => {
           </button>
         )}
       </form>
+
+      <div style={{ marginTop: '1rem' }}>
+        <Link className="link" to="/teams">
+          Back to Teams
+        </Link>
+      </div>
     </div>
   );
 };

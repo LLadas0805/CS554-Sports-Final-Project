@@ -44,8 +44,8 @@ router.route('/create')
         helper.validText(city, "city")
         if (!statesCities[state].includes(city)) throw `Invalid city for ${state}`
         
-        const ndescription = helper.validText(description, 'description')
-        if (ndescription.length < 10 || ndescription.length > 500) throw 'description length has to be at least 10 or no more than 500 characters'
+        description = helper.validText(description, 'description')
+        if (description.length < 10 || description.length > 500) throw 'description length has to be at least 10 or no more than 500 characters'
         if (!preferredSports || !Array.isArray(preferredSports) || preferredSports.length === 0) throw "Must include at least one sport!";
 
         for (const sport of preferredSports) {
@@ -54,12 +54,12 @@ router.route('/create')
         }
 
         helper.validText(experience, "skill level")
+        if (!skills.includes(experience)) throw 'Skill level not listed'
 
     } catch (e) {
       const msg = typeof e === 'string' ? e : e.message || 'Unknown error';
       return res.status(400).json({error: msg});
     }
-
     
     try {
       const team = await teams.createTeam(
@@ -133,6 +133,7 @@ router.route('/filter')
         distance = undefined;
       }
 
+      
       const result = await teams.getTeamsByFilters(
         req.session.user._id,
         name,
@@ -145,8 +146,45 @@ router.route('/filter')
     } catch (e){
       console.error('Error in /team/filter:', e);
       const msg =
-        typeof e === 'string' ? e : e.message || 'Failed to filter teams';
+        typeof e === 'string' ? e : e?.message || 'Failed to filter teams';
       return res.status(500).json({ error: msg });
+    }
+  });
+
+router.route('/user/:userId')
+  .get(accountVerify, async (req, res) => {
+    try {
+      helper.validText(req.params.userId, 'user ID');
+      if (!ObjectId.isValid(req.params.userId)) throw 'invalid object ID';
+    } catch (e) {
+      return res.status(400).json({error: e});
+    }
+
+    try {
+      const userTeams = await teams.getTeamsByMemberId(req.params.userId);
+      return res.status(200).json(userTeams);
+    } catch (e) {
+      return res.status(500).json({error: `Failed to get user teams: ${e}`});
+    }
+  });
+
+  router.route('/user/:userId/owned')
+  .get(accountVerify, async (req, res) => {
+    try {
+      helper.validText(req.params.userId, 'user ID');
+      if (!ObjectId.isValid(req.params.userId)) throw 'invalid object ID';
+    } catch (e) {
+      return res.status(400).json({error: e});
+    }
+
+    try {
+      const ownedTeam = await teams.getTeamByOwnerId(req.params.userId);
+      return res.status(200).json(ownedTeam);
+    } catch (e) {
+      if (e === 'No team with that owner id') {
+        return res.status(404).json({error: 'User does not own a team'});
+      }
+      return res.status(500).json({error: `Failed to get owned team: ${e}`});
     }
   });
 
@@ -252,22 +290,6 @@ router.route('/:id')
     }
   });
 
-router.route('/members/:memberId') 
-  .get(async(req, res) => {
-    try {
-        helper.validText(req.params.memberId, 'member ID');
-        if (!ObjectId.isValid(req.params.memberId)) throw 'invalid object ID';   
-    } catch (e) {
-        return res.status(400).json({error: e});
-    }
-    try {
-        const result = await teams.getTeamsByMemberId(req.params.memberId);
-        res.status(200).json(result);
-    } catch (e) {
-        res.status(500).json({error: `Failed to find teams`})
-    }
-  })
-
 router.route('/members/:teamId/:memberId')
     .post(accountVerify, async(req, res) => {
         try {
@@ -304,6 +326,22 @@ router.route('/members/:teamId/:memberId')
         }
     });
 
+router.route('/members/:memberId') 
+  .get(async(req, res) => {
+    try {
+        helper.validText(req.params.memberId, 'member ID');
+        if (!ObjectId.isValid(req.params.memberId)) throw 'invalid object ID';   
+    } catch (e) {
+        return res.status(400).json({error: e});
+    }
+    try {
+        const result = await teams.getTeamsByMemberId(req.params.memberId);
+        res.status(200).json(result);
+    } catch (e) {
+        res.status(500).json({error: `Failed to find teams`})
+    }
+  })
+
 router.route('/requests/:teamId/:userId')
     .post(accountVerify, async(req, res) => {
         try {
@@ -317,6 +355,21 @@ router.route('/requests/:teamId/:userId')
         }
         try {
             const result = await teams.sendJoinRequest(req.params.teamId, req.params.userId);
+            const io = req.app.locals.io;
+
+            io.to(req.params.userId).emit("notification", {
+              type: "TEAM_REQUEST_RECEIVED",
+              teamId: req.params.teamId,
+              from: req.session.user._id,
+              message: "Team request received!"
+            });
+
+            io.to(req.session.user._id).emit("notification", {
+              type: "TEAM_REQUEST_SENT",
+              teamId: req.params.teamId,
+              to: req.params.userId
+            });
+
             res.status(200).json(result);
         } catch (e) {
             res.status(500).json({error: `Failed to send join request: ${e}`})

@@ -69,14 +69,14 @@ const GameList = (props) => {
   };
 
   const handleDelete = async (id) => {
-    const { data } = await axios.delete(`http://localhost:3000/game/${id}`, {
-      withCredentials: true
-    });
-    if (data.error) {
-      alert("Error delete game", data.error)
-    } else {
+    try {
+      const response = await axios.delete(`http://localhost:3000/game/${id}`, {
+        withCredentials: true
+      });
       alert("Game deleted successfully");
       await fetchData()
+    } catch (error) {
+      alert(error?.response?.data?.error)
     }
   };
 
@@ -122,7 +122,7 @@ const GameList = (props) => {
             className="btn btn-primary filter-btn"
             style={{ backgroundColor: '#1890ff', color: 'white' }}
             onClick={() => navigate(`/games/add`)}>
-            New Game
+            +New Game
           </button>
         </div>
 
@@ -152,22 +152,28 @@ const GameList = (props) => {
                     <div style={styles.actions}>
                       <button
                         className="btn btn-primary"
-                        style={{ backgroundColor: '#f9f9f9', marginRight: '6px' }}
+                        style={{ backgroundColor: '#979797ff', marginRight: '6px' }}
                         onClick={() => navigate(`/games/${game._id}`)}>
-                        Detail
+                        View
                       </button>
-                      <button
-                        className="btn btn-primary"
-                        style={{ backgroundColor: '#1890ff', color: 'white', marginRight: '6px' }}
-                        onClick={() => navigate(`/games/edit/${game._id}`)}>
-                        Edit
-                      </button>
-                      <button
-                        className="btn btn-primary"
-                        style={{ backgroundColor: '#f32828', color: 'white' }}
-                        onClick={() => handleDelete(game._id)}>
-                        Delete
-                      </button>
+                      {
+                        game.canEditOrDelete ? (
+                          <>
+                            <button
+                              className="btn btn-primary"
+                              style={{ backgroundColor: '#1890ff', color: 'white', marginRight: '6px' }}
+                              onClick={() => navigate(`/games/edit/${game._id}`)}>
+                              Edit
+                            </button>
+                            <button
+                              className="btn btn-primary"
+                              style={{ backgroundColor: '#f32828', color: 'white' }}
+                              onClick={() => handleDelete(game._id)}>
+                              Delete
+                            </button>
+                          </>
+                        ) : null
+                      }
                     </div>
                   </div>
                 ))

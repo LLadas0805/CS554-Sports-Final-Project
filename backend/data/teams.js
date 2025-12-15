@@ -32,13 +32,18 @@ export const createTeam = async (
         if (!sports.includes(newSport)) throw `Invalid sport`;
     }
 
-    const newExperience = helper.validText(experience, "skill level");
+    const newExperience = helper.validText(experience, "skill level")
+    if (!skills.includes(newExperience)) throw 'Skill level not listed'
 
     ownerId = helper.validText(ownerId, 'owner ID');
     if (!ObjectId.isValid(ownerId)) throw 'Invalid owner ID';
 
     const teamCollection = await teams();
-    
+    const existingTeam = await teamCollection.findOne({ 
+        owner: new ObjectId(ownerId)
+    });
+
+    if (existingTeam) throw "Team with this owner ID already in use, cannot own more than one team!";
 
     const {lat, lon} = await helper.getCoords(newCity, newState)
     const location = {
@@ -100,6 +105,17 @@ export const getAllTeams = async () => {
 export const getTeamsByFilters = async (userId, name, distance, sport, skillLevel = "") => {
     
   const teamCollection = await teams();
+  const userCollection = await users();
+
+  const user = await userCollection.findOne({ _id: new ObjectId(userId) });
+
+  if (!user){
+    throw "Error: User not found.";
+  }
+
+  if (!user.location?.coordinates){
+    throw "Error: User location missing.";
+  }
 
   const andConditions = [];
 
@@ -134,6 +150,22 @@ export const getTeamsByFilters = async (userId, name, distance, sport, skillLeve
     query.$and = andConditions;
   }
 
+  if (distance !== undefined && distance !== null && distance !== ''){
+    const miles = Number(distance);
+    if (Number.isNaN(miles) || miles < 0){
+        throw 'Error: Distance must be a non-negative number.';
+    }
+
+    const [userLon, userLat] = user.location.coordinates;
+
+    query.location = {
+        $near: {
+            $geometry: { type: 'Point', coordinates: [userLon, userLat] },
+            $maxDistance: miles * 1609.34
+        }
+    };
+  }
+
   const teamList = await teamCollection.find(query).toArray();
 
   teamList.forEach((t) => {
@@ -150,7 +182,7 @@ export const getTeamByOwnerId = async (ownerId) => {
     const teamCollection = await teams();
     const team = await teamCollection.findOne({owner: new ObjectId(ownerId)});
     if (!team) throw 'No team with that owner id';
-    return team
+    return team;
 }
 
 export const getTeamsByMemberId = async (memberId) => {
@@ -162,7 +194,7 @@ export const getTeamsByMemberId = async (memberId) => {
         "members.userId": new ObjectId(memberId)
     }).toArray();
 
-    return teamList
+    return teamList;
 }
 
 export const updateTeam = async(
@@ -356,3 +388,4 @@ export const removeJoinRequest = async (teamId, userId) => {
 
     return { removed: userId };
 };
+
