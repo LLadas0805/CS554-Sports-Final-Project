@@ -117,23 +117,19 @@ const Team = (props) => {
 
   async function handleInvite(e) {
     e.preventDefault();
-    if (!inviteUserId.trim()) return;
 
     try {
       setError('');
       setMessage('');
+  
       await axios.post(
-        `http://localhost:3000/team/members/${id}/${inviteUserId.trim()}`,
+        `http://localhost:3000/user/invites/${inviteUserId}/${id}`,
         {},
         { withCredentials: true }
       );
-      setMessage('User added to team!');
+      setMessage('Invite sent to user!');
       setInviteUserId('');
 
-      const { data: updated } = await axios.get(`http://localhost:3000/team/${id}`, {
-        withCredentials: true
-      });
-      setTeamData(updated);
     } catch (e) {
       console.error(e);
       setError(e.response?.data?.error || e.message || 'Failed to invite user');
@@ -162,7 +158,7 @@ const Team = (props) => {
       });
 
       setMembersData((prev) => prev.filter((m) => String(m._id) !== memberId));
-      setMessage('Member updated');
+      setMessage('Member removed');
     } catch (e) {
       console.error('Error removing member:', e);
       setError(e.response?.data?.error || e.message || 'Failed to remove member');

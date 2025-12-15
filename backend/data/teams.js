@@ -296,9 +296,13 @@ export const addMember = async (teamId, user, memberId) => {
     if (!ObjectId.isValid(memberId)) throw 'Invalid member ID';
 
     const teamCollection = await teams();
+    const userCollection = await users();
 
     const team = await teamCollection.findOne({ _id: new ObjectId(teamId) });
     if (!team) throw 'Team not found';
+
+    const userFound = await userCollection.findOne({ _id: new ObjectId(memberId) });
+    if (!userFound) throw 'User not found';
 
     if (team.owner.toString() !== user._id.toString()) throw 'Only the team owner can add members';
    
@@ -322,7 +326,7 @@ export const addMember = async (teamId, user, memberId) => {
         }
     );
 
-    return { added: memberId };
+    return { added: memberId, team: team };
 
 };
 
@@ -355,7 +359,7 @@ export const deleteMember = async (teamId, user, memberId) => {
         { _id: new ObjectId(teamId) },
         { $pull: { members: new ObjectId(memberId) } }  
     );
-    return { removed: memberId };
+    return { removed: memberId, team: team};
 
 };
 
@@ -384,7 +388,7 @@ export const sendJoinRequest = async (teamId, userId) => {
         { $push: { joinRequests: { _id: new ObjectId(), teamId: new ObjectId(teamId), teamName: team.teamName, userId: new ObjectId(userId), userName: user.username, requestedAt: new Date() } } }
     );
 
-    return { requested: teamId };
+    return { requested: team, from: user.username };
 };
 
 export const removeJoinRequest = async (teamId, userId) => {
@@ -406,6 +410,6 @@ export const removeJoinRequest = async (teamId, userId) => {
         { $pull: { joinRequests: { userId: new ObjectId(userId) } } }
     );
 
-    return { removed: userId };
+    return { removed: userId, from: team };
 };
 

@@ -375,15 +375,17 @@ export const sendTeamInvite = async (userId, teamId) => {
     const team = await teamCollection.findOne({ _id: new ObjectId(teamId) });
     if (!team) throw 'Team not found';
 
-    if (user.teamInvites.some(inv => inv.teamId.toString() === teamId.toString())) throw 'Invite already sent';
+    if (user.teamInvites && user.teamInvites.length > 0) {
+      if (user.teamInvites.some(inv => inv.teamId.toString() === teamId.toString())) throw 'Invite already sent';
+    }
     if (team.members.some(m => m.toString() === userId.toString())) throw 'User is already a member of the team';
     
     await userCollection.updateOne(
         { _id: new ObjectId(userId) },
-        { $push: { teamInvites: { teamId: new ObjectId(teamId), requestedAt: new Date() } } }
+        { $push: { teamInvites: { _id: new ObjectId(), teamId: new ObjectId(teamId), team: team, requestedAt: new Date() } } }
     );
 
-    return { invited: userId, teamId };
+    return { invited: userId, team: team };
 };
 
 export const removeTeamInvite = async (userId, teamId) => {
@@ -397,7 +399,7 @@ export const removeTeamInvite = async (userId, teamId) => {
     const teamCollection = await teams();
 
     const user = await userCollection.findOne({ _id: new ObjectId(userId) });
-    if (!user) throw 'User not found'; //small fix for proper validation
+    if (!user) throw 'User not found'; 
 
     const team = await teamCollection.findOne({ _id: new ObjectId(teamId) });
     if (!team) throw 'Team not found';
@@ -405,16 +407,18 @@ export const removeTeamInvite = async (userId, teamId) => {
     if (!user.teamInvites.some(inv => inv.teamId.toString() === teamId.toString())) throw 'Invite was never sent';
     
     await userCollection.updateOne(
-        { _id: new ObjectId(userId) },
-        { $pull: { teamInvites: { teamId: new ObjectId(teamId), requestedAt: new Date() } } }
+      { _id: new ObjectId(userId) },
+      { $pull: { teamInvites: { teamId: new ObjectId(teamId) } } }
     );
 
     return { removed: userId, teamId };
 };
 
 export const getPendingTeamInvites = async (userId) => {
+  
   userId = helper.validText(userId, 'user ID');
   if (!ObjectId.isValid(userId)) throw 'invalid object ID';
+
   const userCollection = await users();
   const teamCollection = await teams();
   const user = await userCollection.findOne({ _id: new ObjectId(userId) });
@@ -422,19 +426,39 @@ export const getPendingTeamInvites = async (userId) => {
   if (!user.teamInvites || user.teamInvites.length === 0) {
       return [];
   }
-  const teamIds = user.teamInvites.map(inv => inv.teamId);
-  const teamList = await teamCollection.find({
-      _id: { $in: teamIds }
-  }).toArray();
   
-  const invitesWithTeamData = user.teamInvites.map(invite => {
-      const team = teamList.find(t => t._id.toString() === invite.teamId.toString());
-      return {
-          teamId: invite.teamId,
-          requestedAt: invite.requestedAt,
-          team: team || null
-      };
-  });
-  
-  return invitesWithTeamData;
+  return user.teamInvites;
 };
+
+export const acceptTeamInvite = async (userId, teamId) => {
+  userId = helper.validText(userId, 'user ID');
+  teamId = helper.validText(teamId, 'team ID');
+
+  if (!ObjectId.isValid(userId)) throw 'Invalid user ID';
+  if (!ObjectId.isValid(teamId)) throw 'Invalid team ID';
+
+  const userCollection = await users();
+  const teamCollection = await teams();
+
+  const user = await userCollection.findOne({ _id: new ObjectId(userId) });
+  if (!user) throw 'User not found';
+
+  const team = await teamCollection.findOne({ _id: new ObjectId(teamId) });
+  if (!team) throw 'Team not found';
+
+  if (!user.teamInvites || !user.teamInvites.some(inv => inv.teamId.toString() === teamId.toString())) throw 'Invite not found';
+
+  if (team.members.some(m => (m && m.userId ? m.userId.toString() : m.toString()) === userId.toString())) throw 'User is already a member of the team';
+
+  await teamCollection.updateOne(
+    { _id: new ObjectId(teamId) },
+    { $push: { members: new ObjectId(userId) }, $pull: { joinRequests: { userId: new ObjectId(userId) } } }
+  );
+
+  await userCollection.updateOne(
+    { _id: new ObjectId(userId) },
+    { $pull: { teamInvites: { teamId: new ObjectId(teamId) } } }
+  );
+
+  return { user: user, team: team };
+}

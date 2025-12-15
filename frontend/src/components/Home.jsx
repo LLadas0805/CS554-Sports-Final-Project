@@ -13,7 +13,7 @@ function Home(props) {
   const [activeTeams, setActiveTeams] = useState([]);
   const [pendingInvites, setPendingInvites] = useState([]);
   const [pendingRequests, setPendingRequests] = useState([]);
-
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
 
 
   useEffect(() => {
@@ -27,20 +27,34 @@ function Home(props) {
           setLoggedId(data.user._id)
           setLogged(true);
 
-          
-          setPendingInvites(data.user.teamInvites || []);
-          
+          try {
+            const invitesRes = await axios.get(
+              `http://localhost:3000/user/invites/${data.user._id}`,
+              { withCredentials: true }
+            );
+            console.log(invitesRes);
+            setPendingInvites(invitesRes.data || []);
+          } catch (err) {
+            console.error("Error fetching invites:", err);
+          }
           
           const teamsRes = await axios.get(
             `http://localhost:3000/team/members/${data.user._id}`,
             { withCredentials: true }
           );
 
-          console.log(teamsRes.data);
-
           setActiveTeams(teamsRes.data || []);
 
-          
+          try {
+            const eventsRes = await axios.get(
+              `http://localhost:3000/events/upcoming/${data.user._id}`,
+              { withCredentials: true }
+            );
+            setUpcomingEvents(eventsRes.data || []);
+          } catch (err) {
+            console.error("Error fetching upcoming events:", err);
+            setUpcomingEvents([]); // fail silently for now
+          }
 
           const teamOwned = await axios.get( `http://localhost:3000/team/user/${data.user._id}/owned/`,
             { withCredentials: true })
@@ -87,14 +101,21 @@ function Home(props) {
         { withCredentials: true }
       );
 
-      // Optionally, add the team to activeTeams if backend returns it instead
-      // For now we'll just remove the invite from the list
       setPendingInvites((prev) =>
         prev.filter((i) => i._id !== invite._id)
       );
 
-      // If you want to be fancy you could also refetch active teams here
-      // or push a new team object into activeTeams.
+      let {data} = await axios.get("http://localhost:3000/user/auth", {
+          withCredentials: true
+      });
+
+      const teamsRes = await axios.get(
+        `http://localhost:3000/team/members/${data.user._id}`,
+        { withCredentials: true }
+      );
+
+      setActiveTeams(teamsRes.data || activeTeams);
+    
     } catch (err) {
       console.error("Error accepting invite:", err);
       alert("Failed to accept invite.");
@@ -103,14 +124,10 @@ function Home(props) {
 
   const handleDeclineInvite = async (invite) => {
     try {
-      await axios.post(
-        "http://localhost:3000/user/invites/decline",
-        {
-          teamId: invite.teamId
-        },
+      await axios.delete(
+        `http://localhost:3000/user/invites/${loggedId}/${invite.teamId}`,
         { withCredentials: true }
       );
-
       // Remove the invite locally
       setPendingInvites((prev) =>
         prev.filter((i) => i._id !== invite._id)
@@ -123,20 +140,20 @@ function Home(props) {
 
   const handleAcceptRequest = async (request) => {
     try {
-      await axios.post(
+      const result = await axios.post(
         `http://localhost:3000/team/members/${request.teamId}/${request.userId}`,
         {},
         { withCredentials: true }
       );
 
-      // Optionally, add the team to activeTeams if backend returns it instead
-      // For now we'll just remove the invite from the list
+      console.log(result);
+
       setPendingRequests((prev) =>
         prev.filter((i) => i._id !== request._id)
       );
 
-      // If you want to be fancy you could also refetch active teams here
-      // or push a new team object into activeTeams.
+      setActiveTeams(prevTeams => [...prevTeams, result.data.team]);
+
     } catch (err) {
       console.error("Error accepting request:", err);
       alert("Failed to accept request.");
@@ -217,15 +234,10 @@ function Home(props) {
                           {pendingInvites.map((invite) => (
                             <li key={invite._id}>
                               <div>
-                                {/* Team name / info */}
-                                {invite.teamName ? (
+                                {/* Team name / info */}                               
                                   <>
-                                    Invite to join <strong>{invite.teamName}</strong>
-                                    {invite.inviterName && <> from {invite.inviterName}</>}
+                                    Invite to join <strong>{invite.team.teamName}</strong>                                 
                                   </>
-                                ) : (
-                                  <>Team invite (ID: {invite.teamId})</>
-                                )}
                               </div>
 
                               {/* Buttons */}
@@ -277,6 +289,34 @@ function Home(props) {
                                   Decline
                                 </button>
                               </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </section>
+
+                     <section className="home-section">
+
+                      <h2>Upcoming Events</h2>
+                      {upcomingEvents.length === 0 ? (
+                        <p>No upcoming events. Once your teams schedule games or practices, they’ll show up here.</p>
+                      ) : (
+                        <ul>
+                          {upcomingEvents.map((event) => (
+                            <li key={event._id}>
+                              <div>
+                                <strong>{event.title || "Team Event"}</strong>
+                                {event.teamName && <> – {event.teamName}</>}
+                              </div>
+                              {event.date && (
+                                <div>
+                                  {new Date(event.date).toLocaleString(undefined, {
+                                    dateStyle: "medium",
+                                    timeStyle: "short"
+                                  })}
+                                </div>
+                              )}
+                              {event.location && <div>{event.location}</div>}
                             </li>
                           ))}
                         </ul>
