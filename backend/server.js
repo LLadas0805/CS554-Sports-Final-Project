@@ -15,6 +15,11 @@ import { initIndexes } from './config/indexes.js';
 
 app.use(express.json());
 
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
+
 const sessionMiddleware = session({
   name: 'AuthenticationState',
   store: new RedisStore({ client, prefix: 'sess:' }),
@@ -36,10 +41,7 @@ const rewriteUnsupportedBrowserMethods = (req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(rewriteUnsupportedBrowserMethods);
-app.use(cors({
-  origin: "http://localhost:5173",
-  credentials: true
-}));
+
 
 configRoutes(app);
 
