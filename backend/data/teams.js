@@ -105,6 +105,17 @@ export const getAllTeams = async () => {
 export const getTeamsByFilters = async (userId, name, distance, sport, skillLevel = "") => {
     
   const teamCollection = await teams();
+  const userCollection = await users();
+
+  const user = await userCollection.findOne({ _id: new ObjectId(userId) });
+
+  if (!user){
+    throw "Error: User not found.";
+  }
+
+  if (!user.location?.coordinates){
+    throw "Error: User location missing.";
+  }
 
   const andConditions = [];
 
@@ -139,6 +150,22 @@ export const getTeamsByFilters = async (userId, name, distance, sport, skillLeve
     query.$and = andConditions;
   }
 
+  if (distance !== undefined && distance !== null && distance !== ''){
+    const miles = Number(distance);
+    if (Number.isNaN(miles) || miles < 0){
+        throw 'Error: Distance must be a non-negative number.';
+    }
+
+    const [userLon, userLat] = user.location.coordinates;
+
+    query.location = {
+        $near: {
+            $geometry: { type: 'Point', coordinates: [userLon, userLat] },
+            $maxDistance: miles * 1609.34
+        }
+    };
+  }
+
   const teamList = await teamCollection.find(query).toArray();
 
   teamList.forEach((t) => {
@@ -155,7 +182,7 @@ export const getTeamByOwnerId = async (ownerId) => {
     const teamCollection = await teams();
     const team = await teamCollection.findOne({owner: new ObjectId(ownerId)});
     if (!team) throw 'No team with that owner id';
-    return team
+    return team;
 }
 
 export const getTeamsByMemberId = async (memberId) => {
@@ -386,5 +413,4 @@ export const removeJoinRequest = async (teamId, userId) => {
 
     return { removed: userId };
 };
-
 

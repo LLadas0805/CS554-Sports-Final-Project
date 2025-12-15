@@ -133,6 +133,7 @@ router.route('/filter')
         distance = undefined;
       }
 
+      
       const result = await teams.getTeamsByFilters(
         req.session.user._id,
         name,
@@ -145,7 +146,7 @@ router.route('/filter')
     } catch (e){
       console.error('Error in /team/filter:', e);
       const msg =
-        typeof e === 'string' ? e : e.message || 'Failed to filter teams';
+        typeof e === 'string' ? e : e?.message || 'Failed to filter teams';
       return res.status(500).json({ error: msg });
     }
   });
@@ -372,8 +373,7 @@ router.route('/requests/:teamId/:userId')
               teamId: req.params.teamId,
               to: req.params.userId
             });
-            await client.del(`team_id:${req.params.teamId}`);
-            await client.del("teams")
+
             res.status(200).json(result);
         } catch (e) {
             res.status(500).json({error: `Failed to send join request: ${e}`})
