@@ -15,6 +15,7 @@ const Team = (props) => {
   const [inviteUserId, setInviteUserId] = useState('');
   const [ownerData, setOwnerData] = useState(null);
   const [membersData, setMembersData] = useState([]);
+  const [gamesData, setGamesData] = useState([])
 
   
   useEffect(() => {
@@ -75,6 +76,11 @@ const Team = (props) => {
             setAuthUser(loggedData.user);
         } else {
             setAuthUser(null);
+        }
+
+        const {data: gamesData} = await axios.get(`http://localhost:3000/game/team/${id}`)
+        if (gamesData) {
+          setGamesData(gamesData);
         }
 
       } catch (e) {
@@ -232,6 +238,21 @@ const isOwner = (() => {
           <p>No members yet.</p>
         )}
 
+        <h2>Game History:</h2>
+        {gamesData.length > 0 ? (
+          <ul>
+            {gamesData.map(game => (
+              <li key={game._id}>
+                <Link to={`/games/${game._id}`}>
+                  {game.team1.name} vs. ({game.team2.name} - {game.date.slice(0, 10)})
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No games yet.</p>
+        )}
+
         {message && <p className="success">{message}</p>}
         {error && <p className="error">{error}</p>}
         {logged && !isOwner && (
@@ -241,20 +262,25 @@ const isOwner = (() => {
         )}
         {logged && isOwner && (
           <div className="pages">
-            <form onSubmit={handleInvite} className="invite-form">
+            <div className="form">
+              <form onSubmit={handleInvite} className="invite-form">
+              
               <label>
                 Invite user by ID:
                 <input
                   type="text"
                   value={inviteUserId}
+                  className="form-input"
                   onChange={(e) => setInviteUserId(e.target.value)}
-                  placeholder="User ID"
+                  placeholder="Enter an ID from User URL"
                 />
               </label>
               <button type="submit" className="btn btn-primary">
                 Add Member
               </button>
             </form>
+            </div>
+            
 
             <Link className="link" to={`/teams/${id}/edit`}>
               Edit Team

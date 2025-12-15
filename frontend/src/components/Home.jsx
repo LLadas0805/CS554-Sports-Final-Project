@@ -202,37 +202,6 @@ function Home(props) {
                         ))}
                       </ul>
                     )}
-
-                    
-
-
-                    <section className="home-section">
-                      <h2>Upcoming Events</h2>
-                      {upcomingEvents.length === 0 ? (
-                        <p>No upcoming events. Once your teams schedule games or practices, they’ll show up here.</p>
-                      ) : (
-                        <ul>
-                          {upcomingEvents.map((event) => (
-                            <li key={event._id}>
-                              <div>
-                                <strong>{event.title || "Team Event"}</strong>
-                                {event.teamName && <> – {event.teamName}</>}
-                              </div>
-                              {event.date && (
-                                <div>
-                                  {new Date(event.date).toLocaleString(undefined, {
-                                    dateStyle: "medium",
-                                    timeStyle: "short"
-                                  })}
-                                </div>
-                              )}
-                              {event.location && <div>{event.location}</div>}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </section>
-
                 </div>
             ) : (
                 <div className="pages">

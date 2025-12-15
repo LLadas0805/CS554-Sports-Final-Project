@@ -184,6 +184,23 @@ router.route('/:id')
     }
   });
 
+  router.route('/team/:teamId')
+  .get(async (req, res) => {
+    try {
+      helper.validText(req.params.teamId, 'team ID');
+      if (!ObjectId.isValid(req.params.teamId)) throw 'invalid object ID';
+    } catch (e) {
+      return res.status(400).json({error: e});
+    }
+
+    try {
+      const gamesTeamId = await games.getGamesByTeamId(req.params.teamId);
+      return res.status(200).json(gamesTeamId);
+    } catch (e) {
+      return res.status(500).json({error: `Failed to get games by ID: ${e}`});
+    }
+  });
+
   router.route('/team/:teamId/upcoming')
   .get(async (req, res) => {
     try {

@@ -82,7 +82,7 @@ const Game = (props) => {
 
           <br/>
 
-          <table style={{border: '1px solid black', width: '50%'}}>
+          <table style={{border: '0px solid black', width: '80%'}}>
             <thead>
               <tr>
                 <th>Team</th>
