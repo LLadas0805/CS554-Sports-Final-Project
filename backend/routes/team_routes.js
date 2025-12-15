@@ -302,7 +302,7 @@ router.route('/members/:teamId/:memberId')
             return res.status(400).json({error: e});
         }
         try {
-            const result = await teams.addMember(req.params.teamId, req.user, req.params.memberId);
+            const result = await teams.addMember(req.params.teamId, req.session.user, req.params.memberId);
             await client.del(`team_id:${req.params.teamId}`);
             await client.del("teams")
             res.status(200).json(result);
@@ -321,7 +321,7 @@ router.route('/members/:teamId/:memberId')
             return res.status(400).json({error: e});
         }
         try {
-            const result = await teams.deleteMember(req.params.teamId, req.user, req.params.memberId);
+            const result = await teams.deleteMember(req.params.teamId, req.session.user, req.params.memberId);
             await client.del(`team_id:${req.params.teamId}`);
             await client.del("teams")
             res.status(200).json(result);

@@ -339,7 +339,7 @@ export const deleteMember = async (teamId, user, memberId) => {
     const team = await teamCollection.findOne({ _id: new ObjectId(teamId) });
     if (!team) throw 'Team not found';
 
-    if (team.owner.toString() !== user._id.toString() || user._id.toString() !== memberId) throw 'Only the team owner or current deleted member can delete members';
+    if (team.owner.toString() !== user._id.toString() && user._id.toString() !== memberId) throw 'Only the team owner or current deleted member can delete members';
    
     if (team.owner.toString() === memberId.toString()) throw 'You cannot delete the owner from the team';
 
