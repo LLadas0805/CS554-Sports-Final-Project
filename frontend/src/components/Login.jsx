@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { socket } from "../socket";
 
-function Login(props) {
+function Login({ setUser }) {
 
     const navigate = useNavigate();
 
@@ -31,6 +31,7 @@ function Login(props) {
                 });
                 console.log("Login successful:", response.data);
                 alert("Login successful!");
+                setUser(response.data)
                 setFormData(defaultData); 
                 socket.connect();
                 navigate(`/`);

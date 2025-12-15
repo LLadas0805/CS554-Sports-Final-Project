@@ -33,8 +33,10 @@ const App = () => {
     const {data: loggedData} = await axios.get("http://localhost:3000/user/auth", {
         withCredentials: true
     });
-
-    setUser(loggedData.loggedIn)
+    if (loggedData.loggedIn) {
+      setUser(loggedData.user)
+    }
+    
     setLoading(false)
 
     return () => socket.off("notification");
@@ -48,7 +50,7 @@ const App = () => {
         <Routes>
           <Route path='/' element={<Home />} />
           <Route path='/signup' element={<Signup />} />
-          <Route path='/login' element={<Login />} />
+          <Route path='/login' element={<Login setUser={setUser}/>} />
 
           <Route
             path="/users"
