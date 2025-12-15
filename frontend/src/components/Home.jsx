@@ -12,7 +12,7 @@ function Home(props) {
   const [loggedId, setLoggedId] = useState(null)
   const [activeTeams, setActiveTeams] = useState([]);
   const [pendingInvites, setPendingInvites] = useState([]);
-  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState([]);
 
 
 
@@ -29,7 +29,8 @@ function Home(props) {
 
           
           setPendingInvites(data.user.teamInvites || []);
-
+          
+          
           const teamsRes = await axios.get(
             `http://localhost:3000/team/members/${data.user._id}`,
             { withCredentials: true }
@@ -37,21 +38,20 @@ function Home(props) {
 
           setActiveTeams(teamsRes.data || []);
 
-          try {
-            const eventsRes = await axios.get(
-              `http://localhost:3000/events/upcoming/${data.user._id}`,
-              { withCredentials: true }
-            );
-            setUpcomingEvents(eventsRes.data || []);
-          } catch (err) {
-            console.error("Error fetching upcoming events:", err);
-            setUpcomingEvents([]); // fail silently for now
+          
+
+          const teamOwned = await axios.get( `http://localhost:3000/team/user/${data.user._id}/owned/`,
+            { withCredentials: true })
+
+          if (teamOwned.data) {
+            setPendingRequests(teamOwned.data.joinRequests)
           }
+          
         } else {
             setLogged(false)
         }
         setLoading(false);
-
+       
       } catch (e) {
         console.log(e);
         setLoading(false)
@@ -119,6 +119,44 @@ function Home(props) {
     }
   };
 
+  const handleAcceptRequest = async (request) => {
+    try {
+      await axios.post(
+        `http://localhost:3000/team/members/${request.teamId}/${request.userId}`,
+        {},
+        { withCredentials: true }
+      );
+
+      // Optionally, add the team to activeTeams if backend returns it instead
+      // For now we'll just remove the invite from the list
+      setPendingRequests((prev) =>
+        prev.filter((i) => i._id !== request._id)
+      );
+
+      // If you want to be fancy you could also refetch active teams here
+      // or push a new team object into activeTeams.
+    } catch (err) {
+      console.error("Error accepting request:", err);
+      alert("Failed to accept request.");
+    }
+  };
+
+  const handleDeclineRequest = async (request) => {
+    try {
+      await axios.delete(
+        `http://localhost:3000/team/requests/${request.teamId}/${request.userId}`,
+        { withCredentials: true }
+      );
+      // Remove the invite locally
+      setPendingRequests((prev) =>
+        prev.filter((i) => i._id !== request._id)
+      );
+    } catch (err) {
+      console.error("Error declining request:", err);
+      alert("Failed to decline request.");
+    }
+  };
+
   if (loading) {
     return (
       <div>
@@ -166,6 +204,25 @@ function Home(props) {
                       )}
                     </section>
 
+                    <section className="home-section">
+                      <h2>Pending Team Invites</h2>
+                      {pendingInvites.length === 0 ? (
+                        <p>You have no pending invites.</p>
+                      ) : (
+                        <ul>
+                          {pendingInvites.map((invite) => (
+                            <li key={invite._id}>
+                              <div>
+                                {/* Team name / info */}
+                                {invite.teamName ? (
+                                  <>
+                                    Invite to join <strong>{invite.teamName}</strong>
+                                    {invite.inviterName && <> from {invite.inviterName}</>}
+                                  </>
+                                ) : (
+                                  <>Team invite (ID: {invite.teamId})</>
+                                )}
+                              </div>
 
                     <h2>Pending Team Invites</h2>
                     {pendingInvites.length === 0 ? (
