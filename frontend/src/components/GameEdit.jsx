@@ -18,7 +18,7 @@ function GameEdit() {
         date: "",
     });
     const [teams, setTeams] = useState([]);
-
+    const [saving, setSaving] = useState(false);
     let {id} = useParams();
     const isEditPage = id !== undefined;
 
@@ -94,6 +94,9 @@ function GameEdit() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (saving) return;
+        setSaving(true);
+
         formData.score1 = Number(formData.score1);
         formData.score2 = Number(formData.score2);
 
@@ -109,6 +112,7 @@ function GameEdit() {
                 console.error(err.response?.data?.error);
                 alert(err.response?.data?.error || err.message);
             }
+
         } else {
             try {
                 const response = await axios.post(`http://localhost:3000/game/create`,  formData, { withCredentials: true },{
@@ -122,6 +126,8 @@ function GameEdit() {
                 alert(err.response?.data?.error || err.message);
             }
         }
+
+        setSaving(false);
     };
 
     if (loading) {
@@ -268,7 +274,7 @@ function GameEdit() {
 
                         <br />
 
-                        <button type="submit">Submit</button>
+                        <button type="submit" disabled={saving}>Submit</button>
                     </form>
                 </div>
 

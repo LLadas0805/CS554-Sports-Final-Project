@@ -24,15 +24,19 @@ export async function cacheGameId(req, res, next) {
 }
 
 export async function cacheGames(req, res, next) {
-  let exists = await client.exists("games");
-  if (exists) {
-    try {
-      const gameListString = await client.get("games");
-      const gameList = JSON.parse(gameListString)
-      return res.status(200).json(gameList);
-    } catch (e) {
-      return res.status(500).json({ error: `Failed to get games`});
+  try {
+    const userId = req.session?.user?._id?.toString();
+    if (!userId) return next();
+
+    const cacheKey = `games:${userId}`;
+
+    const cached = await client.get(cacheKey);
+    if (cached){
+      return res.status(200).json(JSON.parse(cached));
     }
+
+    return next();
+  } catch (e){
+    return next();
   }
-  next(); 
 }
