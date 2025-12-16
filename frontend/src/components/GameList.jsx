@@ -135,8 +135,10 @@ const GameList = (props) => {
                 <div style={styles.cell}>Sport</div>
                 <div style={styles.cell}>State</div>
                 <div style={styles.cell}>City</div>
-                <div style={styles.cell}>Score1</div>
-                <div style={styles.cell}>Score2</div>
+                <div style={styles.cell}>Team 1</div>
+                <div style={styles.cell}>Score 1</div>
+                <div style={styles.cell}>Team 2</div>
+                <div style={styles.cell}>Score 2</div>
                 <div style={styles.cell}>Date</div>
                 <div style={styles.actions}>Actions</div>
               </div>
@@ -146,7 +148,13 @@ const GameList = (props) => {
                     <div style={styles.cell}>{game.sport}</div>
                     <div style={styles.cell}>{game.state}</div>
                     <div style={styles.cell}>{game.city}</div>
+                    <Link to={`/teams/${game.team1._id.toString()}`}>
+                      <div style={styles.cell}>{game.team1.name}</div>
+                    </Link>
                     <div style={styles.cell}>{game.team1.score}</div>
+                    <Link to={`/teams/${game.team2._id.toString()}`}>
+                      <div style={styles.cell}>{game.team2.name}</div>
+                    </Link>
                     <div style={styles.cell}>{game.team2.score}</div>
                     <div style={styles.cell}>{game.date?.substring(0, 10)}</div>
                     <div style={styles.actions}>

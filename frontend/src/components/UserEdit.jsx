@@ -11,7 +11,7 @@ function UserEdit(props) {
     const [logged, setLogged] = useState(false);
     // const classes = useStyles();
     let {id} = useParams();
-
+    const [saving, setSaving] = useState(false);
 
     const [formData, setFormData] = useState({});
     const [advancedSearch, setAdvancedSearch] = useState('');
@@ -114,6 +114,9 @@ function UserEdit(props) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (saving) return;
+        setSaving(true);
         try {
             const response = await axios.put(`http://localhost:3000/user/${id}`,  formData, { withCredentials: true },{
                 headers: { "Content-Type": "application/json" }
@@ -124,6 +127,8 @@ function UserEdit(props) {
         } catch (err) {
             console.error(err.response?.data?.error);
             alert(err.response?.data?.error || err.message);
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -356,7 +361,7 @@ function UserEdit(props) {
 
                         <br />
                         
-                        <button type="submit">Edit Account</button>
+                        <button type="submit" disabled={saving}>Edit Account</button>
                     </form>
                 </div>
                 <div className = "pages">

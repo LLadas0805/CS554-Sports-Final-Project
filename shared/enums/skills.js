@@ -1,2 +1,2 @@
-const skills = ["Casual", "Intermediate", "Competitive"];
+const skills = ["Beginner", "Intermediate", "Advanced"];
 export default skills;
