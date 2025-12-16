@@ -70,7 +70,7 @@ const Team = (props) => {
         }
 
         // Games
-        const { data: games } = await axios.get(`/game/team/${id}`, {
+        const { data: games } = await axios.get(`/api/game/team/${id}`, {
           withCredentials: true
         });
         if (games) setGamesData(games);
@@ -144,7 +144,7 @@ const Team = (props) => {
     try {
       setError('');
       setMessage('');
-      await axios.delete(`/team/members/${id}/${memberId}`, {
+      await axios.delete(`/api/team/members/${id}/${memberId}`, {
         withCredentials: true
       });
 

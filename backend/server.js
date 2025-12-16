@@ -42,22 +42,9 @@ app.use(cors({
   credentials: true
 }));
 
-configRoutes(app); // /api/... routes
-
-// 2. Serve frontend static files
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const frontendPath = path.join('dist');
-app.use(express.static(path.join(process.cwd(), "dist")));
-
-// 3. React SPA catch-all
-app.get(/^(?!\/api).*/, (req, res) => {
-  res.sendFile(path.join(process.cwd(), "dist", "index.html"));
-});
+configRoutes(app); 
 
 app.use(express.static(path.join(process.cwd(), "dist")));
-
 
 app.get(/^(?!\/api).*/, (req, res) => {
   res.sendFile(path.join(process.cwd(), "dist", "index.html"));

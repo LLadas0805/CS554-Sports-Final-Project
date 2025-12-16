@@ -24,6 +24,10 @@ function Login({ setUser }) {
     };
 
     const handleSubmit = async (e) => {
+
+            const notificationHandler = (data) => {
+                if (data?.message) alert(data.message);
+            };
             e.preventDefault();
 
             if (loading) return;
@@ -38,6 +42,7 @@ function Login({ setUser }) {
                 setUser(response.data)
                 setFormData(defaultData); 
                 socket.connect();
+                socket.on("notification", notificationHandler);
                 navigate(`/`);
             } catch (err) {
                 console.error(err.response?.data?.error);
