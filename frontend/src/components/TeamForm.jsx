@@ -2,15 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { createTeam, getTeamById, updateTeam, deleteTeam } from '../api/teamApi';
 
-<<<<<<< HEAD
 import statesCities from '../shared/data/US_States_and_Cities.json' with { type: 'json' };
 import sports from '../shared/enums/sports.js';
 import skills from '../shared/enums/skills.js';
-=======
-import statesCities from '../../shared/data/US_States_and_Cities.json' with { type: 'json' };
-import sports from '../../shared/enums/sports.js';
-import skills from '../../shared/enums/skills.js';
->>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
 
 const TeamForm = ({ mode }) => {
   const isEdit = mode === 'edit';
