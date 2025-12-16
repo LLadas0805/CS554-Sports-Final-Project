@@ -33,7 +33,10 @@ function Home(props) {
               { withCredentials: true }
             );
             console.log(invitesRes);
-            setPendingInvites(invitesRes.data || []);
+            setPendingInvites(Array.isArray(invitesRes.data)
+              ? invitesRes.data
+              : invitesRes.data.invites || []
+            );
           } catch (err) {
             console.error("Error fetching invites:", err);
           }
@@ -60,7 +63,11 @@ function Home(props) {
             { withCredentials: true })
 
           if (teamOwned.data) {
-            setPendingRequests(teamOwned.data.joinRequests)
+            setPendingRequests(
+              Array.isArray(teamOwned.data?.joinRequests)
+                ? teamOwned.data.joinRequests
+                : []
+            );
           }
           
         } else {
@@ -105,7 +112,7 @@ function Home(props) {
         prev.filter((i) => i._id !== invite._id)
       );
 
-      let {data} = await axios.get("/user/auth", {
+      let {data} = await axios.get("/api/user/auth", {
           withCredentials: true
       });
 
