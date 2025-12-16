@@ -190,8 +190,6 @@ const seedGames = [
     sport: "Basketball",
     state: "California",
     city: "San Francisco",
-    score1: 72,
-    score2: 65,
     location: { type: "Point", coordinates: [-122.4194, 37.7749] },
     date: new Date("2025-01-12T14:00:00"),
     createdAt: new Date()
