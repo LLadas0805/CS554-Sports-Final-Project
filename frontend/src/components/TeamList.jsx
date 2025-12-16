@@ -2,8 +2,8 @@ import React, {useState, useEffect} from 'react';
 import GenericItem from './GenericItem';
 import NotFound from './NotFound';
 import axios from 'axios';
-import sports from '../shared/enums/sports.js';
-import skills from "../shared/enums/skills.ks"
+import sports from '../../shared/enums/sports.js';
+import skills from "../../shared/enums/skills.js"
 import {Link, useParams, useNavigate} from 'react-router-dom';
 
 const TeamList = () => {

@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-<<<<<<< HEAD
-import sports from '../shared/enums/sports.js';
-=======
 import sports from '../../shared/enums/sports.js';
->>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
 import { Link, useParams, useNavigate } from 'react-router-dom';
 
 const styles = {
@@ -33,11 +29,7 @@ const GameList = (props) => {
 
   async function fetchData() {
     try {
-<<<<<<< HEAD
       const { data } = await axios.get(`/api/game/`, {
-=======
-      const { data } = await axios.get(`/game/`, {
->>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
         withCredentials: true
       });
 
@@ -61,11 +53,7 @@ const GameList = (props) => {
     setLoading(true);
     try {
       if (sport === "") {
-<<<<<<< HEAD
         const { data } = await axios.get(`/api/game/`, {
-=======
-        const { data } = await axios.get(`/game/`, {
->>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
           withCredentials: true
         });
         setGames(data);
@@ -82,11 +70,7 @@ const GameList = (props) => {
 
   const handleDelete = async (id) => {
     try {
-<<<<<<< HEAD
       const response = await axios.delete(`/api/game/${id}`, {
-=======
-      const response = await axios.delete(`/game/${id}`, {
->>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
         withCredentials: true
       });
       alert("Game deleted successfully");

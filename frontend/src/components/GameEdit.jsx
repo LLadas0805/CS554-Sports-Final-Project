@@ -1,12 +1,7 @@
 import {Link, useNavigate, useParams} from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
-<<<<<<< HEAD
-import statesCities from '../shared/data/US_States_and_Cities.json' with { type: 'json' };
-import sports from '../shared/enums/sports.js';
-=======
 import statesCities from '../../shared/data/US_States_and_Cities.json' with { type: 'json' };
 import sports from '../../shared/enums/sports.js';
->>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
 import axios from 'axios';
 
 function GameEdit() {
@@ -32,11 +27,7 @@ function GameEdit() {
             setLoading(true);
             try {
                 const { data } = await axios.get(
-<<<<<<< HEAD
                     `/api/game/${id}`,
-=======
-                    `/game/${id}`,
->>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
                     { withCredentials: true }
                 );
 
@@ -63,11 +54,7 @@ function GameEdit() {
         async function fetchTeams() {
             try {
                 const { data } = await axios.get(
-<<<<<<< HEAD
                     `/api/team/`,
-=======
-                    `/team/`,
->>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
                     { withCredentials: true }
                 );
                 if (data.error) throw "Error fetching teams";
@@ -115,11 +102,7 @@ function GameEdit() {
 
         if(isEditPage) {
             try {
-<<<<<<< HEAD
                 const response = await axios.put(`/api/game/${id}`, formData, { withCredentials: true },{
-=======
-                const response = await axios.put(`/game/${id}`, formData, { withCredentials: true },{
->>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
                     headers: { "Content-Type": "application/json" }
                 });
                 console.log("Edit successful:", response.data);
@@ -132,11 +115,7 @@ function GameEdit() {
 
         } else {
             try {
-<<<<<<< HEAD
                 const response = await axios.post(`/api/game/create`,  formData, { withCredentials: true },{
-=======
-                const response = await axios.post(`/game/create`,  formData, { withCredentials: true },{
->>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
                     headers: { "Content-Type": "application/json" }
                 });
                 console.log("New game successful:", response);

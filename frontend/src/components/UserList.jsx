@@ -2,11 +2,7 @@ import React, {useState, useEffect} from 'react';
 import GenericItem from './GenericItem';
 import NotFound from './NotFound';
 import axios from 'axios';
-<<<<<<< HEAD
-import sports from '../shared/enums/sports.js';
-=======
 import sports from '../../shared/enums/sports.js';
->>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
 import {Link, useParams, useNavigate} from 'react-router-dom';
 
 const UserList = () => {
@@ -19,11 +15,7 @@ const UserList = () => {
     useEffect(() => {
         async function fetchData() {
         try {
-<<<<<<< HEAD
             const {data} = await axios.get(`/api/user/`, {
-=======
-            const {data} = await axios.get(`/user/`, {
->>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
                 withCredentials: true
             });
 
@@ -46,21 +38,13 @@ const UserList = () => {
         setLoading(true);
         try {
             if (name === "" && distance == "" && skillLevel == "any" && sport == "") {
-<<<<<<< HEAD
                 const {data} = await axios.get(`/api/user/`, {
-=======
-                const {data} = await axios.get(`/user/`, {
->>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
                     withCredentials: true
                 });
                 setUsersData(data);
             } else {
                 
-<<<<<<< HEAD
                 let { data } = await axios.post("/api/user/filter",
-=======
-                let { data } = await axios.post("/user/filter",
->>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
                     { name, distance, sport, skillLevel},
                 { withCredentials: true });
                 setUsersData(data);

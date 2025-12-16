@@ -1,7 +1,7 @@
 import {Link, useNavigate, useParams} from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
-import statesCities from '../shared/data/US_States_and_Cities.json' with { type: 'json' };
-import sports from '../shared/enums/sports.js';
+import statesCities from '../../shared/data/US_States_and_Cities.json' with { type: 'json' };
+import sports from '../../shared/enums/sports.js';
 import axios from 'axios';
 
 function UserEdit(props) {
