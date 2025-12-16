@@ -39,12 +39,7 @@ export const createTeam = async (
     if (!ObjectId.isValid(ownerId)) throw 'Invalid owner ID';
 
     const teamCollection = await teams();
-    const existingTeam = await teamCollection.findOne({ 
-        owner: new ObjectId(ownerId)
-    });
-
-    if (existingTeam) throw "Team with this owner ID already in use, cannot own more than one team!";
-
+   
     const {lat, lon} = await helper.getCoords(newCity, newState)
     const location = {
         type: "Point",
@@ -180,8 +175,7 @@ export const getTeamByOwnerId = async (ownerId) => {
     if (!ObjectId.isValid(ownerId)) throw 'invalid object ID';
 
     const teamCollection = await teams();
-    const team = await teamCollection.findOne({owner: new ObjectId(ownerId)});
-    if (!team) throw 'No team with that owner id';
+    const team = await teamCollection.find({owner: new ObjectId(ownerId)}).toArray();
     return team;
 }
 

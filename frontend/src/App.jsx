@@ -14,6 +14,7 @@ import Game from './components/Game.jsx'
 import GameEdit from './components/GameEdit'
 import GameList from './components/GameList'
 import UserOnlyRoute from './components/UserOnlyRoute'
+import Navbar from "./components/Navbar";
 import { useEffect, useState  } from "react";
 import { socket } from "./socket.js";
 import axios from 'axios';
@@ -22,6 +23,7 @@ const App = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+
   // Listens for notifications and logins on backend
   useEffect(() => {
     const fetchData = async () => {
@@ -29,6 +31,7 @@ const App = () => {
         withCredentials: true
       });
       if (loggedData.loggedIn) setUser(loggedData.user);
+      else setUser(null);
       setLoading(false);
     };
 
@@ -41,12 +44,30 @@ const App = () => {
     return () => socket.off("notification");
   }, []);
 
+  const handleLogout = async () => {
+    try {
+      await axios.post("http://localhost:3000/user/logout", {}, { withCredentials: true });
+      socket.disconnect();
+      setUser(null);
+      window.location.href = "/";
+    } catch (e) {
+      alert("Logout failed");
+    }
+  };
 
   if (loading) {
     return null;
   } else {
+    const loggedIn = !!user;
+    const userId = user?._id;
     return (
       <div className='App'>
+        <Navbar
+        loggedIn={loggedIn}
+        userId={userId}
+        onLogout={handleLogout}
+      />
+      <main className="main-content">
         <Routes>
           <Route path='/' element={<Home />} />
           <Route path='/signup' element={<Signup />} />
@@ -154,6 +175,7 @@ const App = () => {
 
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </main>
       </div>
     );
   }

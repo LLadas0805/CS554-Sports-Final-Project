@@ -178,8 +178,8 @@ router.route('/user/:userId')
     }
 
     try {
-      const ownedTeam = await teams.getTeamByOwnerId(req.params.userId);
-      return res.status(200).json(ownedTeam);
+      const ownedTeams = await teams.getTeamByOwnerId(req.params.userId);
+      return res.status(200).json(ownedTeams);
     } catch (e) {
       if (e === 'No team with that owner id') {
         return res.status(404).json({error: 'User does not own a team'});
@@ -409,8 +409,8 @@ router.route('/requests/:teamId/:userId')
             helper.validText(req.params.teamId, 'team ID');
             if (!ObjectId.isValid(req.params.teamId)) throw 'invalid object ID';
 
-            helper.validText(req.params.memberId, 'member ID');
-            if (!ObjectId.isValid(req.params.memberId)) throw 'invalid object ID';   
+            helper.validText(req.params.userId, 'user ID');
+            if (!ObjectId.isValid(req.params.userId)) throw 'invalid object ID';   
         } catch (e) {
             return res.status(400).json({error: e});
         }

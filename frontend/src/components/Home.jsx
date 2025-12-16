@@ -6,7 +6,6 @@ import { socket } from "../socket";
 function Home(props) {
 
   const navigate = useNavigate();
-  // Use this for loading certain elements like team invites/edit/delete
   const [logged, setLogged] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loggedId, setLoggedId] = useState(null)
@@ -43,6 +42,7 @@ function Home(props) {
             { withCredentials: true }
           );
 
+
           setActiveTeams(teamsRes.data || []);
 
           try {
@@ -53,15 +53,19 @@ function Home(props) {
             setUpcomingEvents(eventsRes.data || []);
           } catch (err) {
             console.error("Error fetching upcoming events:", err);
-            setUpcomingEvents([]); // fail silently for now
+            setUpcomingEvents([]);
           }
 
           const teamOwned = await axios.get( `http://localhost:3000/team/user/${data.user._id}/owned/`,
             { withCredentials: true })
 
-          if (teamOwned.data) {
-            setPendingRequests(teamOwned.data.joinRequests)
-          }
+          const ownedTeams = teamOwned.data || [];
+          const allRequests = ownedTeams.flatMap(t => (t.joinRequests || []).map(r => ({
+            ...r,
+            teamName: r.teamName || t.teamName,  
+            teamId: r.teamId || t._id
+          })));
+          setPendingRequests(allRequests);
           
         } else {
             setLogged(false)
@@ -76,21 +80,7 @@ function Home(props) {
     fetchData();
   }, []);
 
-  const handleLogout = async () => {
-    try {
-        await axios.post("http://localhost:3000/user/logout", {}, {
-            withCredentials: true
-        });
-
-        alert("Logout successful!");
-        socket.disconnect();
-        navigate("/login");
-    } catch (err) {
-        alert("Logout failed!");
-        console.error("Logout failed:", err);
-    }
-  };
-
+ 
   const handleAcceptInvite = async (invite) => {
     try {
       await axios.post(
@@ -166,12 +156,10 @@ function Home(props) {
         `http://localhost:3000/team/requests/${request.teamId}/${request.userId}`,
         { withCredentials: true }
       );
-      // Remove the invite locally
       setPendingRequests((prev) =>
         prev.filter((i) => i._id !== request._id)
       );
     } catch (err) {
-      console.error("Error declining request:", err);
       alert("Failed to decline request.");
     }
   };
@@ -186,28 +174,13 @@ function Home(props) {
 
   return (
     <div>
+      <div className="pages">
         <h1>Welcome to Sports Finder</h1>
-        <div className="pages">
             <h2>Discover Local Teams, Players, Games and More!</h2>
 
             {logged ? (
                 <div className="pages">
-                    <Link className='link' to={`/users/${loggedId}`}>
-                        Go to Profile
-                    </Link>
-                    <Link className='link' to={`/users/`}>
-                        Browse Users
-                    </Link>
-                    <Link className='link' to={`/teams/`}>
-                        Browse Teams
-                    </Link>
-                    <Link className='link' to={`/games/`}>
-                        Browse Games
-                    </Link>
-                    <button className="link" onClick={handleLogout}>
-                        Logout
-                    </button>
-
+                  <div className="home-grid">
                     <section className="home-section">
                       <h2>Your Active Teams</h2>
                       {activeTeams.length === 0 ? (
@@ -322,16 +295,24 @@ function Home(props) {
                         </ul>
                       )}
                     </section>
-                    
+                    </div>
                 </div>
             ) : (
                 <div className="pages">
-                    <Link className='link' to='/login'>
-                        Sign in
-                    </Link>
-                    <Link className='link' to='/signup'>
-                        Create an Account
-                    </Link>
+                     <p>
+                        Sports Finder helps you discover local teams, players, and games based on
+                        your interests and location.
+                      </p>
+
+                      <p>
+                        Create an account to join teams, send and receive invitations, schedule
+                        games, and connect with other players in your area.
+                      </p>
+
+                      <p>
+                        To get started, use the navigation bar above to <strong>sign up</strong> for
+                        a new account or <strong>log in</strong> if you already have one.
+                      </p>
                 </div>
             )}
         </div>
