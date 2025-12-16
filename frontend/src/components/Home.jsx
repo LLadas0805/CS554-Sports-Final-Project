@@ -6,7 +6,6 @@ import { socket } from "../socket";
 function Home(props) {
 
   const navigate = useNavigate();
-  // Use this for loading certain elements like team invites/edit/delete
   const [logged, setLogged] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loggedId, setLoggedId] = useState(null)

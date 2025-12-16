@@ -7,9 +7,7 @@ import axios from 'axios';
 function UserEdit(props) {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
-    // Use this for loading certain elements like team invites/edit/delete
     const [logged, setLogged] = useState(false);
-    // const classes = useStyles();
     let {id} = useParams();
     const [saving, setSaving] = useState(false);
 

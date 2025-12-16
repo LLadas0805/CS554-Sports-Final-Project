@@ -9,9 +9,7 @@ const User = (props) => {
   const [loading, setLoading] = useState(true);
   const [activeTeams, setActiveTeams] = useState([]);
   const navigate = useNavigate();
-  // Use this for loading certain elements like team invites/edit/delete
   const [logged, setLogged] = useState(false);
-  // const classes = useStyles();
   let {id} = useParams();
 
   
