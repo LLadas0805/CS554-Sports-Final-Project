@@ -38,7 +38,7 @@ const TeamForm = ({ mode }) => {
         const data = await getTeamById(id);
 
         setForm({
-          name: data.name || '',
+          name: data.teamName || '',
           description: data.description || '',
           state: data.state || '',
           city: data.city || '',

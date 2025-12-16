@@ -257,6 +257,7 @@ router.route('/:id')
 
         await client.set(`team_id:${req.params.id}`, JSON.stringify(updatedTeam)); 
         await client.del("teams");
+        await client.del("games");
         return res.status(200).json(updatedTeam);
     } catch (e) {
       if (e === 'team not found') {
@@ -280,6 +281,7 @@ router.route('/:id')
       let deleteTeam = await teams.deleteTeam(req.params.id, req.session.user);
       await client.del(`team_id:${req.params.id}`);
       await client.del("teams")
+      await client.del("games");
       return res.status(200).json(deleteTeam);
     } catch (e) {
       if (e === 'team not found') {

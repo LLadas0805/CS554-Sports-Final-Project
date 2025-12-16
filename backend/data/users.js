@@ -241,9 +241,7 @@ export const updateUser = async(
     const newFirstName = helper.validName(firstName, "First");
     const newLastName = helper.validName(lastName, "Last");
     const newUserName = helper.validUsername(username);
-    const newPassword = helper.validPassword(password);
-    helper.matchingPassword(newPassword, confirmPassword);
-    const newEmail = helper.validEmail(email);
+    const newEmail = helper.validEmail(email).toLowerCase();
     const newNumber = helper.validNumber(phoneNumber)
     const newState = helper.validText(state, "state")
     if (!statesCities[newState]) throw 'Invalid state'
@@ -276,12 +274,18 @@ export const updateUser = async(
 
     const userCollection = await users();
     const existingUser = await userCollection.findOne({ 
-      $or: [
-        { username: { $regex: `^${newUserName}$`, $options: "i" } },
-        { phoneNumber: { $regex: `^${newNumber}$`, $options: "i" } },
-        { email: { $regex: `^${newEmail}$`, $options: "i" } }
+      $and: [
+        { _id: { $ne: new ObjectId(userId) } }, 
+        { 
+          $or: [
+            { username: { $regex: `^${newUserName}$`, $options: "i" } },
+            { phoneNumber: newNumber }, 
+            { email: newEmail }          
+          ]
+        }
       ]
     });
+
 
     if (existingUser) throw "User with this username, number, or email already in use";
 
