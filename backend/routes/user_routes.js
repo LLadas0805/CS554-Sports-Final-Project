@@ -110,7 +110,7 @@ router.route('/signup')
         beginnerSports
       );
 
-      await client.set(`user_id:${req.params.id}`, JSON.stringify(reg)); 
+      await client.set(`user_id:${reg._id}`, JSON.stringify(reg)); 
       await client.del("users")
       return res.status(200).json(reg);
       
