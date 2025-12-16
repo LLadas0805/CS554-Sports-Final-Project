@@ -19,7 +19,7 @@ function Home(props) {
     async function fetchData() {
       try {
 
-        let {data} = await axios.get("http://localhost:3000/user/auth", {
+        let {data} = await axios.get("/api/user/auth", {
             withCredentials: true
         });
         if (data.loggedIn) {
@@ -28,17 +28,20 @@ function Home(props) {
 
           try {
             const invitesRes = await axios.get(
-              `http://localhost:3000/user/invites/${data.user._id}`,
+              `/api/user/invites/${data.user._id}`,
               { withCredentials: true }
             );
             console.log(invitesRes);
-            setPendingInvites(invitesRes.data || []);
+            setPendingInvites(Array.isArray(invitesRes.data)
+              ? invitesRes.data
+              : invitesRes.data.invites || []
+            );
           } catch (err) {
             console.error("Error fetching invites:", err);
           }
           
           const teamsRes = await axios.get(
-            `http://localhost:3000/team/members/${data.user._id}`,
+            `/api/team/members/${data.user._id}`,
             { withCredentials: true }
           );
 
@@ -47,7 +50,7 @@ function Home(props) {
 
           try {
             const eventsRes = await axios.get(
-              `http://localhost:3000/game/${data.user._id}/upcoming`,
+              `/api/game/${data.user._id}/upcoming`,
               { withCredentials: true }
             );
             setUpcomingEvents(eventsRes.data || []);
@@ -56,7 +59,7 @@ function Home(props) {
             setUpcomingEvents([]);
           }
 
-          const teamOwned = await axios.get( `http://localhost:3000/team/user/${data.user._id}/owned/`,
+          const teamOwned = await axios.get( `/api/team/user/${data.user._id}/owned/`,
             { withCredentials: true })
 
           const ownedTeams = teamOwned.data || [];
@@ -84,7 +87,7 @@ function Home(props) {
   const handleAcceptInvite = async (invite) => {
     try {
       await axios.post(
-        "http://localhost:3000/user/invites/accept",
+        "/api/user/invites/accept",
         {
           teamId: invite.teamId
         },
@@ -95,12 +98,12 @@ function Home(props) {
         prev.filter((i) => i._id !== invite._id)
       );
 
-      let {data} = await axios.get("http://localhost:3000/user/auth", {
+      let {data} = await axios.get("/api/user/auth", {
           withCredentials: true
       });
 
       const teamsRes = await axios.get(
-        `http://localhost:3000/team/members/${data.user._id}`,
+        `/api/team/members/${data.user._id}`,
         { withCredentials: true }
       );
 
@@ -115,7 +118,7 @@ function Home(props) {
   const handleDeclineInvite = async (invite) => {
     try {
       await axios.delete(
-        `http://localhost:3000/user/invites/${loggedId}/${invite.teamId}`,
+        `/api/user/invites/${loggedId}/${invite.teamId}`,
         { withCredentials: true }
       );
       // Remove the invite locally
@@ -131,7 +134,7 @@ function Home(props) {
   const handleAcceptRequest = async (request) => {
     try {
       const result = await axios.post(
-        `http://localhost:3000/team/members/${request.teamId}/${request.userId}`,
+        `/api/team/members/${request.teamId}/${request.userId}`,
         {},
         { withCredentials: true }
       );
@@ -142,8 +145,6 @@ function Home(props) {
         prev.filter((i) => i._id !== request._id)
       );
 
-      setActiveTeams(prevTeams => [...prevTeams, result.data.team]);
-
     } catch (err) {
       console.error("Error accepting request:", err);
       alert("Failed to accept request.");
@@ -153,7 +154,7 @@ function Home(props) {
   const handleDeclineRequest = async (request) => {
     try {
       await axios.delete(
-        `http://localhost:3000/team/requests/${request.teamId}/${request.userId}`,
+        `/api/team/requests/${request.teamId}/${request.userId}`,
         { withCredentials: true }
       );
       setPendingRequests((prev) =>

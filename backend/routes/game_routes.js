@@ -4,8 +4,8 @@ import * as helper from '../helpers.js'
 import { accountVerify, accountLogged } from '../middleware/middleware_auth.js';
 import {cacheGameId, cacheGames } from "../middleware/middleware_cache_game.js"
 import * as games from '../data/games.js';
-import sports from "../../shared/enums/sports.js";
-import statesCities from '../../shared/data/US_States_and_Cities.json' with { type: 'json' };
+import sports from "../shared/enums/sports.js";
+import statesCities from '../shared/data/US_States_and_Cities.json' with { type: 'json' };
 
 import client from '../config/redisClient.js';
 const router = Router();
@@ -76,9 +76,8 @@ router.route('/create')
         date
       );
 
-      await client.del(`games:${req.session.user._id.toString()}`);
-
-
+      await client.set(`game_id:${game._id}`, JSON.stringify(game));
+      await client.del("games")
       return res.status(200).json(game);
 
     } catch (e) {
@@ -98,7 +97,6 @@ router.route('/:id')
     try {
       let game = await games.getGameById(req.params.id)
       await client.set(`game_id:${req.params.id}`, JSON.stringify(game));
-      await client.del(`games:${req.session.user._id.toString()}`);
       return res.status(200).json(game);
     } catch (e) {
       if (e === 'No game with that id') {
@@ -151,8 +149,7 @@ router.route('/:id')
         date);
 
       await client.set(`game_id:${req.params.id}`, JSON.stringify(updatedGame));
-      await client.del(`games:${req.session.user._id.toString()}`);
-
+      await client.del(`games`);
 
       return res.status(200).json(updatedGame);
     } catch (e) {
@@ -176,7 +173,7 @@ router.route('/:id')
     try {
       let deleteGame = await games.deleteGame(req.params.id, req.session.user);
       await client.del(`game_id:${req.params.id}`);
-      await client.del(`games:${req.session.user._id.toString()}`);
+      await client.del(`games`);
 
       return res.status(200).json(deleteGame);
     } catch (e) {

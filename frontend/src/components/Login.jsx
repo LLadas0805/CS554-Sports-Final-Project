@@ -24,14 +24,17 @@ function Login({ setUser }) {
     };
 
     const handleSubmit = async (e) => {
+
+            const notificationHandler = (data) => {
+                if (data?.message) alert(data.message);
+            };
             e.preventDefault();
 
             if (loading) return;
 
             setLoading(true);
             try {
-                
-                const response = await axios.post("http://localhost:3000/user/login", formData, { withCredentials: true }, {
+                const response = await axios.post("/api/user/login", formData, { withCredentials: true }, {
                     headers: { "Content-Type": "application/json" }
                 });
                 console.log("Login successful:", response.data);
@@ -39,6 +42,7 @@ function Login({ setUser }) {
                 setUser(response.data)
                 setFormData(defaultData); 
                 socket.connect();
+                socket.on("notification", notificationHandler);
                 navigate(`/`);
             } catch (err) {
                 console.error(err.response?.data?.error);

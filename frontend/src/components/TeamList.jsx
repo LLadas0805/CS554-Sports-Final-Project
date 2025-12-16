@@ -151,7 +151,7 @@ const TeamList = () => {
         sport: sport || undefined
       };
 
-      const { data } = await axios.post(`http://localhost:3000/team/filter`, body, {
+      const { data } = await axios.post(`/api/team/filter`, body, {
         withCredentials: true
       });
 

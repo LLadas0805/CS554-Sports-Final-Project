@@ -3,9 +3,8 @@ import * as helper from '../helpers.js'
 import {ObjectId} from 'mongodb';
 import {users, teams} from '../config/mongoCollections.js';
 import bcrypt from 'bcrypt';
-import sports from "../../shared/enums/sports.js";
-import skills  from "../../shared/enums/skills.js";
-import statesCities from '../../shared/data/US_States_and_Cities.json' with { type: 'json' };
+import sports from "../shared/enums/sports.js";
+import statesCities from '../shared/data/US_States_and_Cities.json' with { type: 'json' };
 
 export const register = async (
   username,
@@ -56,10 +55,10 @@ export const register = async (
   const userCollection = await users();
   const existingUser = await userCollection.findOne({ 
     $or: [
-      { username: { $regex: `^${newUserName}$`, $options: "i" } },
-      { phoneNumber: { $regex: `^${newNumber}$`, $options: "i" } },
-      { email: { $regex: `^${newEmail}$`, $options: "i" } }
-    ]
+            { username: { $regex: `^${newUserName}$`, $options: "i" } },
+            { phoneNumber: newNumber }, 
+            { email: newEmail }          
+          ]
   });
 
   if (existingUser) throw "User with this username, number, or email already in use";
@@ -242,9 +241,7 @@ export const updateUser = async(
     const newFirstName = helper.validName(firstName, "First");
     const newLastName = helper.validName(lastName, "Last");
     const newUserName = helper.validUsername(username);
-    const newPassword = helper.validPassword(password);
-    helper.matchingPassword(newPassword, confirmPassword);
-    const newEmail = helper.validEmail(email);
+    const newEmail = helper.validEmail(email).toLowerCase();
     const newNumber = helper.validNumber(phoneNumber)
     const newState = helper.validText(state, "state")
     if (!statesCities[newState]) throw 'Invalid state'
@@ -277,12 +274,18 @@ export const updateUser = async(
 
     const userCollection = await users();
     const existingUser = await userCollection.findOne({ 
-      $or: [
-        { username: { $regex: `^${newUserName}$`, $options: "i" } },
-        { phoneNumber: { $regex: `^${newNumber}$`, $options: "i" } },
-        { email: { $regex: `^${newEmail}$`, $options: "i" } }
+      $and: [
+        { _id: { $ne: new ObjectId(userId) } }, 
+        { 
+          $or: [
+            { username: { $regex: `^${newUserName}$`, $options: "i" } },
+            { phoneNumber: newNumber }, 
+            { email: newEmail }          
+          ]
+        }
       ]
     });
+
 
     if (existingUser) throw "User with this username, number, or email already in use";
 

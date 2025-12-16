@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { createTeam, getTeamById, updateTeam, deleteTeam } from '../api/teamApi';
 
-import statesCities from '../../../shared/data/US_States_and_Cities.json' with { type: 'json' };
-import sports from '../../../shared/enums/sports.js';
-import skills from '../../../shared/enums/skills.js';
+import statesCities from '../../shared/data/US_States_and_Cities.json' with { type: 'json' };
+import sports from '../../shared/enums/sports.js';
+import skills from '../../shared/enums/skills.js';
 
 const TeamForm = ({ mode }) => {
   const isEdit = mode === 'edit';
@@ -38,7 +38,7 @@ const TeamForm = ({ mode }) => {
         const data = await getTeamById(id);
 
         setForm({
-          name: data.name || '',
+          name: data.teamName || '',
           description: data.description || '',
           state: data.state || '',
           city: data.city || '',

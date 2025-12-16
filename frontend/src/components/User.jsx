@@ -9,16 +9,14 @@ const User = (props) => {
   const [loading, setLoading] = useState(true);
   const [activeTeams, setActiveTeams] = useState([]);
   const navigate = useNavigate();
-  // Use this for loading certain elements like team invites/edit/delete
   const [logged, setLogged] = useState(false);
-  // const classes = useStyles();
   let {id} = useParams();
 
   
   useEffect(() => {
     async function fetchData() {
       try {
-        const {data} = await axios.get(`http://localhost:3000/user/${id}`, {
+        const {data} = await axios.get(`/api/user/${id}`, {
             withCredentials: true
         });
 
@@ -26,7 +24,7 @@ const User = (props) => {
         if (data.error) throw "error fetching user"
         setUserData(data);
 
-        const {data: loggedData} = await axios.get("http://localhost:3000/user/auth", {
+        const {data: loggedData} = await axios.get("/api/user/auth", {
             withCredentials: true
         });
 
@@ -39,7 +37,7 @@ const User = (props) => {
         }
 
         const teamsRes = await axios.get(
-            `http://localhost:3000/team/members/${id}`,
+            `/api/team/members/${id}`,
             { withCredentials: true }
           );
 
@@ -57,7 +55,7 @@ const User = (props) => {
 
   const handleLogout = async () => {
     try {
-        await axios.post("http://localhost:3000/user/logout", {}, {
+        await axios.post("/api/user/logout", {}, {
             withCredentials: true
         });
       

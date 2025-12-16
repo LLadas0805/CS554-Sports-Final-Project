@@ -1,10 +1,11 @@
 //import mongo collections, bcrypt and implement the following data functions
 import * as helper from '../helpers.js'
 import {ObjectId} from 'mongodb';
-import {teams, users} from '../config/mongoCollections.js';
-import sports from "../../shared/enums/sports.js";
-import skills  from "../../shared/enums/skills.js";
-import statesCities from '../../shared/data/US_States_and_Cities.json' with { type: 'json' };
+import {teams, games, users} from '../config/mongoCollections.js';
+import sports from "../shared/enums/sports.js";
+import skills  from "../shared/enums/skills.js";
+import statesCities from '../shared/data/US_States_and_Cities.json' with { type: 'json' };
+import client from '../config/redisClient.js';
 
 export const createTeam = async (
     name,
@@ -241,6 +242,7 @@ export const updateTeam = async(
         };
 
         const teamCollection = await teams();
+        const gamesCollection = await games();
         const teamExists = await getTeamById(teamId);
         if (!teamExists || teamExists === null) throw 'team not found';
 
@@ -253,6 +255,27 @@ export const updateTeam = async(
         );
         if (!newTeam) throw `Could not update the team with id ${teamId}`;
 
+        await gamesCollection.updateMany(
+            { "team1._id": new ObjectId(teamId) },
+            { $set: { "team1.name": newTeamName } }
+        );
+
+        await gamesCollection.updateMany(
+            { "team2._id": new ObjectId(teamId) },
+            { $set: { "team2.name": newTeamName } }
+        );
+
+        const affectedGames = await gamesCollection.find({
+            $or: [
+                { "team1._id": new ObjectId(teamId) },
+                { "team2._id": new ObjectId(teamId) }
+            ]
+        }).toArray();
+
+        for (const game of affectedGames) {
+            await client.del(`game_id:${game._id.toString()}`);
+        }
+
         return newTeam;
 
 }
@@ -264,7 +287,8 @@ export const deleteTeam = async (teamId, user) => {
 
     const teamCollection = await teams();
     const userCollection = await users();
- 
+    const gamesCollection = await games();
+
     const teamExists = await teamCollection.findOne({_id: new ObjectId(teamId)});
 
     if (!teamExists) throw 'team not found';
@@ -276,6 +300,22 @@ export const deleteTeam = async (teamId, user) => {
         { 'teamInvites.teamId': new ObjectId(teamId) },
         { $pull: { teamInvites: { teamId: new ObjectId(teamId) } } }
     );
+    
+    const affectedGames = await gamesCollection.find({
+        $or: [
+            { "team1._id": new ObjectId(teamId) },
+            { "team2._id": new ObjectId(teamId) }
+        ]
+    }).toArray();
+
+    await gamesCollection.deleteMany({
+        _id: { $in: affectedGames.map(game => game._id) }
+    });
+
+    for (const game of affectedGames) {
+        await client.del(`game_id:${game._id.toString()}`);
+    }
+
 
     return { deleted: teamId };
 
