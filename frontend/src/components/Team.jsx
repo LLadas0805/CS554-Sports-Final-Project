@@ -24,7 +24,7 @@ const Team = (props) => {
         setError('');
         setMessage('');
 
-        const { data: team } = await axios.get(`http://localhost:3000/team/${id}`, {
+        const { data: team } = await axios.get(`/team/${id}`, {
           withCredentials: true
         });
 
@@ -37,7 +37,7 @@ const Team = (props) => {
         // Owner details
         if (team.owner) {
           try {
-            const { data: owner } = await axios.get(`http://localhost:3000/user/${team.owner}`, {
+            const { data: owner } = await axios.get(`/user/${team.owner}`, {
               withCredentials: true
             });
             setOwnerData(owner);
@@ -50,7 +50,7 @@ const Team = (props) => {
         if (team.members && team.members.length > 0) {
           try {
             const memberPromises = team.members.map((m) =>
-              axios.get(`http://localhost:3000/user/${m}`, { withCredentials: true }).catch(() => null)
+              axios.get(`/user/${m}`, { withCredentials: true }).catch(() => null)
             );
             const memberResponses = await Promise.all(memberPromises);
             const members = memberResponses.filter((r) => r !== null).map((r) => r.data);
@@ -61,7 +61,7 @@ const Team = (props) => {
         }
 
         // Authenticated user
-        const { data: loggedData } = await axios.get('http://localhost:3000/user/auth', {
+        const { data: loggedData } = await axios.get('/user/auth', {
           withCredentials: true
         });
         if (loggedData.loggedIn) {
@@ -71,7 +71,7 @@ const Team = (props) => {
         }
 
         // Games
-        const { data: games } = await axios.get(`http://localhost:3000/game/team/${id}`, {
+        const { data: games } = await axios.get(`/game/team/${id}`, {
           withCredentials: true
         });
         if (games) setGamesData(games);
@@ -104,7 +104,7 @@ const Team = (props) => {
       setError('');
       setMessage('');
       await axios.post(
-        `http://localhost:3000/team/requests/${id}/${authUser._id}`,
+        `/team/requests/${id}/${authUser._id}`,
         {},
         { withCredentials: true }
       );
@@ -123,7 +123,7 @@ const Team = (props) => {
       setMessage('');
   
       await axios.post(
-        `http://localhost:3000/user/invites/${inviteUserId}/${id}`,
+        `/user/invites/${inviteUserId}/${id}`,
         {},
         { withCredentials: true }
       );
@@ -145,7 +145,7 @@ const Team = (props) => {
     try {
       setError('');
       setMessage('');
-      await axios.delete(`http://localhost:3000/team/members/${id}/${memberId}`, {
+      await axios.delete(`/team/members/${id}/${memberId}`, {
         withCredentials: true
       });
 

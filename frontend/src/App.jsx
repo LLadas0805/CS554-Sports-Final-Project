@@ -25,7 +25,7 @@ const App = () => {
   // Listens for notifications and logins on backend
   useEffect(() => {
     const fetchData = async () => {
-      const {data: loggedData} = await axios.get("http://localhost:3000/user/auth", {
+      const {data: loggedData} = await axios.get("/user/auth", {
         withCredentials: true
       });
       if (loggedData.loggedIn) setUser(loggedData.user);

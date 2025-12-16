@@ -1,8 +1,8 @@
 import * as helper from '../helpers.js'
 import {ObjectId} from 'mongodb';
 import {teams, games} from '../config/mongoCollections.js';
-import sports from "../../shared/enums/sports.js";
-import statesCities from '../../shared/data/US_States_and_Cities.json' with { type: 'json' };
+import sports from "../shared/enums/sports.js";
+import statesCities from '../shared/data/US_States_and_Cities.json' with { type: 'json' };
 
 export const createGame = async (
     user,

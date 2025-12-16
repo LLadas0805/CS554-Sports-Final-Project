@@ -18,7 +18,7 @@ const User = (props) => {
   useEffect(() => {
     async function fetchData() {
       try {
-        const {data} = await axios.get(`http://localhost:3000/user/${id}`, {
+        const {data} = await axios.get(`/user/${id}`, {
             withCredentials: true
         });
 
@@ -26,7 +26,7 @@ const User = (props) => {
         if (data.error) throw "error fetching user"
         setUserData(data);
 
-        const {data: loggedData} = await axios.get("http://localhost:3000/user/auth", {
+        const {data: loggedData} = await axios.get("/user/auth", {
             withCredentials: true
         });
 
@@ -39,7 +39,7 @@ const User = (props) => {
         }
 
         const teamsRes = await axios.get(
-            `http://localhost:3000/team/members/${id}`,
+            `/team/members/${id}`,
             { withCredentials: true }
           );
 
@@ -57,7 +57,7 @@ const User = (props) => {
 
   const handleLogout = async () => {
     try {
-        await axios.post("http://localhost:3000/user/logout", {}, {
+        await axios.post("/user/logout", {}, {
             withCredentials: true
         });
       

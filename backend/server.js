@@ -12,13 +12,9 @@ import { RedisStore } from 'connect-redis';
 import { Server } from 'socket.io';
 import setupSocket from './socket/socket.js';
 import { initIndexes } from './config/indexes.js';
+import path from 'path';
 
 app.use(express.json());
-
-app.use(cors({
-  origin: "http://localhost:5173",
-  credentials: true
-}));
 
 const sessionMiddleware = session({
   name: 'AuthenticationState',
@@ -42,13 +38,23 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(rewriteUnsupportedBrowserMethods);
 
+app.use(cors({
+  credentials: true
+}));
 
 configRoutes(app);
+
+app.use(express.static(path.join(process.cwd(), "dist")));
+
+
+app.get(/^(?!\/api).*/, (req, res) => {
+  res.sendFile(path.join(process.cwd(), "dist", "index.html"));
+});
 
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: { origin: "http://localhost:5173", credentials: true }
+  cors: { origin: "*", credentials: true }
 });
 
 app.locals.io = io;
@@ -77,7 +83,9 @@ setupSocket(io);
 
 initIndexes();
 
-server.listen(3000, () => {
+const PORT = process.env.PORT || 3000
+
+server.listen(PORT , () => {
   console.log("We've now got a server!");
-  console.log('Your routes will be running on http://localhost:3000');
+  console.log('Your routes will be running on ');
 })

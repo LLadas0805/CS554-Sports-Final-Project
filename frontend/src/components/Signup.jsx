@@ -1,7 +1,7 @@
 import {Link, useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
-import statesCities from '../../../shared/data/US_States_and_Cities.json' with { type: 'json' };
-import sports from '../../../shared/enums/sports.js';
+import statesCities from '../../shared/data/US_States_and_Cities.json' with { type: 'json' };
+import sports from '../../shared/enums/sports.js';
 import axios from 'axios';
 
 function Signup(props) {
@@ -76,10 +76,10 @@ function Signup(props) {
         e.preventDefault();
 
         if (loading) return;
-        
+
         setLoading(true);
         try {
-            const response = await axios.post("http://localhost:3000/user/signup",  formData, { withCredentials: true },{
+            const response = await axios.post("/user/signup",  formData, { withCredentials: true },{
                 headers: { "Content-Type": "application/json" }
             });
             console.log("Signup successful:", response.data);

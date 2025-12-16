@@ -13,7 +13,7 @@ const Game = (props) => {
   useEffect(() => {
     async function fetchData() {
       try {
-        const { data: gameData } = await axios.get(`http://localhost:3000/game/${id}`, { withCredentials: true });
+        const { data: gameData } = await axios.get(`/game/${id}`, { withCredentials: true });
 
         if (!gameData || gameData.error) throw "error fetching game";
 
