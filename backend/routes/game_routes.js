@@ -5,10 +5,6 @@ import { accountVerify, accountLogged } from '../middleware/middleware_auth.js';
 import {cacheGameId, cacheGames } from "../middleware/middleware_cache_game.js"
 import * as games from '../data/games.js';
 import sports from "../shared/enums/sports.js";
-<<<<<<< HEAD
-import skills  from "../shared/enums/skills.js";
-=======
->>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
 import statesCities from '../shared/data/US_States_and_Cities.json' with { type: 'json' };
 
 import client from '../config/redisClient.js';

@@ -4,15 +4,9 @@ import * as helper from '../helpers.js'
 import { accountVerify, accountLogged } from '../middleware/middleware_auth.js';
 import {cacheTeamId, cacheTeams } from "../middleware/middleware_cache_team.js"
 import * as teams from '../data/teams.js';
-<<<<<<< HEAD
 import sports from "../shared/enums/sports.js";
 import skills  from "../shared/enums/skills.js";
 import statesCities from '../shared/data/US_States_and_Cities.json' with { type: 'json' };
-=======
-import sports from "../../frontend/shared/enums/sports.js";
-import skills  from "../../frontend/shared/enums/skills.js";
-import statesCities from '../../frontend/shared/data/US_States_and_Cities.json' with { type: 'json' };
->>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
 
 import client from '../config/redisClient.js';
 const router = Router();
