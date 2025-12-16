@@ -4,8 +4,8 @@ import * as helper from '../helpers.js'
 import { accountVerify, accountLogged } from '../middleware/middleware_auth.js';
 import {cacheGameId, cacheGames } from "../middleware/middleware_cache_game.js"
 import * as games from '../data/games.js';
-import sports from "../../shared/enums/sports.js";
-import statesCities from '../../shared/data/US_States_and_Cities.json' with { type: 'json' };
+import sports from "../shared/enums/sports.js";
+import statesCities from '../shared/data/US_States_and_Cities.json' with { type: 'json' };
 
 import client from '../config/redisClient.js';
 const router = Router();

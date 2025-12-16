@@ -1,8 +1,8 @@
 import * as helper from '../helpers.js'
 import {ObjectId} from 'mongodb';
 import {teams, games} from '../config/mongoCollections.js';
-import sports from "../../shared/enums/sports.js";
-import statesCities from '../../shared/data/US_States_and_Cities.json' with { type: 'json' };
+import sports from "../shared/enums/sports.js";
+import statesCities from '../shared/data/US_States_and_Cities.json' with { type: 'json' };
 
 export const createGame = async (
     user,
@@ -202,8 +202,8 @@ export const updateGame = async(
         if (team1.owner.toString() !== user._id.toString() && team2.owner.toString() !== user._id.toString()) throw 'User did not create this team and cannot update game'
 
         const updatedGameData = {
-            team1: {_id: new ObjectId(team1._id), score: score1 || null},
-            team2: {_id: new ObjectId(team2._id), score: score2 || null},
+            team1: {_id: new ObjectId(team1._id), name: team1.teamName, score: score1 || null},
+            team2: {_id: new ObjectId(team2._id), name: team2.teamName, score: score2 || null},
             sport,
             state,
             city,

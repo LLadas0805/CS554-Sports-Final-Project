@@ -4,9 +4,9 @@ import * as helper from '../helpers.js'
 import { accountVerify, accountLogged } from '../middleware/middleware_auth.js';
 import {cacheTeamId, cacheTeams } from "../middleware/middleware_cache_team.js"
 import * as teams from '../data/teams.js';
-import sports from "../../shared/enums/sports.js";
-import skills  from "../../shared/enums/skills.js";
-import statesCities from '../../shared/data/US_States_and_Cities.json' with { type: 'json' };
+import sports from "../shared/enums/sports.js";
+import skills  from "../shared/enums/skills.js";
+import statesCities from '../shared/data/US_States_and_Cities.json' with { type: 'json' };
 
 import client from '../config/redisClient.js';
 const router = Router();
@@ -257,6 +257,7 @@ router.route('/:id')
 
         await client.set(`team_id:${req.params.id}`, JSON.stringify(updatedTeam)); 
         await client.del("teams");
+        await client.del("games");
         return res.status(200).json(updatedTeam);
     } catch (e) {
       if (e === 'team not found') {
@@ -280,6 +281,7 @@ router.route('/:id')
       let deleteTeam = await teams.deleteTeam(req.params.id, req.session.user);
       await client.del(`team_id:${req.params.id}`);
       await client.del("teams")
+      await client.del("games");
       return res.status(200).json(deleteTeam);
     } catch (e) {
       if (e === 'team not found') {
