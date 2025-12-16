@@ -55,10 +55,10 @@ export const register = async (
   const userCollection = await users();
   const existingUser = await userCollection.findOne({ 
     $or: [
-      { username: { $regex: `^${newUserName}$`, $options: "i" } },
-      { phoneNumber: { $regex: `^${newNumber}$`, $options: "i" } },
-      { email: { $regex: `^${newEmail}$`, $options: "i" } }
-    ]
+            { username: { $regex: `^${newUserName}$`, $options: "i" } },
+            { phoneNumber: newNumber }, 
+            { email: newEmail }          
+          ]
   });
 
   if (existingUser) throw "User with this username, number, or email already in use";
