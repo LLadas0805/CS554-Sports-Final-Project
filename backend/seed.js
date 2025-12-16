@@ -132,7 +132,7 @@ const seedTeams = [
     preferredSports: ["Basketball"],
     experience: "Advanced",
     location: { type: "Point", coordinates: [-122.4194, 37.7749] },
-    members: [{ userId: LUKE_ID, requestedAt: new Date() }],
+    members: [LUKE_ID],
     joinRequests: [],
     createdAt: new Date()
   },
@@ -147,7 +147,7 @@ const seedTeams = [
     preferredSports: ["Soccer"],
     experience: "Intermediate",
     location: { type: "Point", coordinates: [-74.0060, 40.7128] },
-    members: [{ userId: BILLY_ID, requestedAt: new Date() }],
+    members: [BILLY_ID],
     joinRequests: [],
     createdAt: new Date()
   },
@@ -162,7 +162,7 @@ const seedTeams = [
     preferredSports: ["Badminton", "Pickleball"],
     experience: "Advanced",
     location: { type: "Point", coordinates: [-97.7431, 30.2672] },
-    members: [{ userId: MARIA_ID, requestedAt: new Date() }],
+    members: [MARIA_ID],
     joinRequests: [],
     createdAt: new Date()
   },
@@ -177,7 +177,7 @@ const seedTeams = [
     preferredSports: ["Ultimate Frisbee", "Softball"],
     experience: "Intermediate",
     location: { type: "Point", coordinates: [-87.6298, 41.8781] },
-    members: [{ userId: AIDEN_ID, requestedAt: new Date() }],
+    members: [AIDEN_ID],
     joinRequests: [],
     createdAt: new Date()
   }
@@ -185,8 +185,8 @@ const seedTeams = [
 
 const seedGames = [
   {
-    team1: { _id: CA_TEAM_ID, score: 72 },
-    team2: { _id: new ObjectId(TX_TEAM_ID), score: 65 },
+    team1: { _id: CA_TEAM_ID, name: "Golden Gate Ballers", score: 72 },
+    team2: { _id: TX_TEAM_ID, name: "Austin Racqueteers", score: 65 },
     sport: "Basketball",
     state: "California",
     city: "San Francisco",
@@ -198,8 +198,8 @@ const seedGames = [
   },
 
   {
-    team1: { _id: NY_TEAM_ID, score: 3 },
-    team2: { _id: new ObjectId(IL_TEAM_ID), score: 2 },
+    team1: { _id: NY_TEAM_ID, name: "NYC Thunder FC", score: 3 },
+    team2: { _id: IL_TEAM_ID, name: "Chicago Flyers", score: 2 },
     sport: "Soccer",
     state: "New York",
     city: "New York",
@@ -209,19 +209,19 @@ const seedGames = [
   },
 
   {
-    team1: { _id: TX_TEAM_ID, score: 21 },
-    team2: { _id: new ObjectId(IL_TEAM_ID), score: 18 },
+    team1: { _id: TX_TEAM_ID, name: "Austin Racqueteers", score: 21 },
+    team2: { _id: IL_TEAM_ID, name: "Chicago Flyers", score: 18 },
     sport: "Badminton",
     state: "Texas",
     city: "Austin",
     location: { type: "Point", coordinates: [-97.7431, 30.2672] },
-    date: new Date("2025-03-20T16:00:00"),
+    date: new Date("2026-03-20T16:00:00"),
     createdAt: new Date()
   },
 
   {
-    team1: { _id: new ObjectId(IL_TEAM_ID), score: 10 },
-    team2: { _id: new ObjectId(NY_TEAM_ID), score: 8 },
+    team1: { _id: IL_TEAM_ID, name: "Chicago Flyers", score: 10 },
+    team2: { _id: NY_TEAM_ID, name: "NYC Thunder FC", score: 8 },
     sport: "Ultimate Frisbee",
     state: "Illinois",
     city: "Chicago",

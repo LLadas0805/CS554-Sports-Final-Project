@@ -4,9 +4,15 @@ import * as helper from '../helpers.js'
 import { accountVerify, accountLogged } from '../middleware/middleware_auth.js';
 import {cacheTeamId, cacheTeams } from "../middleware/middleware_cache_team.js"
 import * as teams from '../data/teams.js';
+<<<<<<< HEAD
 import sports from "../shared/enums/sports.js";
 import skills  from "../shared/enums/skills.js";
 import statesCities from '../shared/data/US_States_and_Cities.json' with { type: 'json' };
+=======
+import sports from "../../frontend/shared/enums/sports.js";
+import skills  from "../../frontend/shared/enums/skills.js";
+import statesCities from '../../frontend/shared/data/US_States_and_Cities.json' with { type: 'json' };
+>>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
 
 import client from '../config/redisClient.js';
 const router = Router();
@@ -133,6 +139,7 @@ router.route('/filter')
         distance = undefined;
       }
 
+      
       const result = await teams.getTeamsByFilters(
         req.session.user._id,
         name,
@@ -145,7 +152,7 @@ router.route('/filter')
     } catch (e){
       console.error('Error in /team/filter:', e);
       const msg =
-        typeof e === 'string' ? e : e.message || 'Failed to filter teams';
+        typeof e === 'string' ? e : e?.message || 'Failed to filter teams';
       return res.status(500).json({ error: msg });
     }
   });
@@ -301,7 +308,21 @@ router.route('/members/:teamId/:memberId')
             return res.status(400).json({error: e});
         }
         try {
-            const result = await teams.addMember(req.params.teamId, req.user, req.params.memberId);
+            const result = await teams.addMember(req.params.teamId, req.session.user, req.params.memberId);
+            const io = req.app.locals.io;
+
+            const addedUserId = req.params.memberId.toString();
+            const teamId = req.params.teamId.toString();
+            const addedBy = req.session.user._id.toString();
+
+            io.to(addedUserId).emit("notification", {
+              type: "TEAM_MEMBER_ADDED",
+              teamId,
+              from: addedBy,
+              message: `You have been added to a team ${result.team.teamName}`
+            });
+            await client.del(`team_id:${req.params.teamId}`);
+            await client.del("teams")
             res.status(200).json(result);
         } catch (e) {
             res.status(500).json({error: `Failed to add member: ${e}`})
@@ -318,7 +339,21 @@ router.route('/members/:teamId/:memberId')
             return res.status(400).json({error: e});
         }
         try {
-            const result = await teams.deleteMember(req.params.teamId, req.user, req.params.memberId);
+            const result = await teams.deleteMember(req.params.teamId, req.session.user, req.params.memberId);
+            const io = req.app.locals.io;
+
+            const removedUserId = req.params.memberId.toString();
+            const teamId = req.params.teamId.toString();
+            const removedBy = req.session.user._id.toString();
+
+            io.to(removedUserId).emit("notification", {
+              type: "TEAM_MEMBER_REMOVED",
+              teamId,
+              from: removedBy,
+              message: `You have been removed from the team ${result.team.teamName}`
+            });
+            await client.del(`team_id:${req.params.teamId}`);
+            await client.del("teams")
             res.status(200).json(result);
         } catch (e) {
             res.status(500).json({error: `Failed to delete member: ${e}`})
@@ -356,19 +391,20 @@ router.route('/requests/:teamId/:userId')
             const result = await teams.sendJoinRequest(req.params.teamId, req.params.userId);
             const io = req.app.locals.io;
 
-            io.to(req.params.userId).emit("notification", {
+            const senderId = req.params.userId.toString();
+            const ownerId = result.requested.owner.toString();
+            const teamId = req.params.teamId;
+
+            io.to(ownerId).emit("notification", {
               type: "TEAM_REQUEST_RECEIVED",
-              teamId: req.params.teamId,
-              from: req.session.user._id,
-              message: "Team request received!"
+              teamId,
+              from: senderId,
+              to: ownerId,
+              message: `You have received a new team join request from ${result.from}`
             });
 
-            io.to(req.session.user._id).emit("notification", {
-              type: "TEAM_REQUEST_SENT",
-              teamId: req.params.teamId,
-              to: req.params.userId
-            });
-
+            await client.del(`team_id:${req.params.teamId}`);
+            await client.del("teams")
             res.status(200).json(result);
         } catch (e) {
             res.status(500).json({error: `Failed to send join request: ${e}`})
@@ -386,6 +422,8 @@ router.route('/requests/:teamId/:userId')
         }
         try {
             const result = await teams.removeJoinRequest(req.params.teamId, req.params.userId);
+            await client.del(`team_id:${req.params.teamId}`);
+            await client.del("teams")
             res.status(200).json(result);
         } catch (e) {
             res.status(500).json({error: `Failed to delete join request: ${e}`})

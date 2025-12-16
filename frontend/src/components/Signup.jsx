@@ -22,7 +22,7 @@ function Signup(props) {
         intermediateSports: [],
         beginnerSports: []
     }
-
+    const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState(defaultData);
     const [advancedSearch, setAdvancedSearch] = useState('');
 
@@ -74,6 +74,10 @@ function Signup(props) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (loading) return;
+
+        setLoading(true);
         try {
             const response = await axios.post("/api/user/signup",  formData, { withCredentials: true },{
                 headers: { "Content-Type": "application/json" }
@@ -85,6 +89,8 @@ function Signup(props) {
         } catch (err) {
             console.error(err.response?.data?.error);
             alert(err.response?.data?.error || err.message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -337,7 +343,7 @@ function Signup(props) {
                     <br />
                     
                         
-                    <button type="submit">Sign Up</button>
+                    <button type="submit" disabled={loading}>Sign Up</button>
                 </form>
             </div>
             <div className = "pages">

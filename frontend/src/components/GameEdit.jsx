@@ -1,7 +1,12 @@
 import {Link, useNavigate, useParams} from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
+<<<<<<< HEAD
 import statesCities from '../shared/data/US_States_and_Cities.json' with { type: 'json' };
 import sports from '../shared/enums/sports.js';
+=======
+import statesCities from '../../shared/data/US_States_and_Cities.json' with { type: 'json' };
+import sports from '../../shared/enums/sports.js';
+>>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
 import axios from 'axios';
 
 function GameEdit() {
@@ -18,7 +23,7 @@ function GameEdit() {
         date: "",
     });
     const [teams, setTeams] = useState([]);
-
+    const [saving, setSaving] = useState(false);
     let {id} = useParams();
     const isEditPage = id !== undefined;
 
@@ -27,7 +32,11 @@ function GameEdit() {
             setLoading(true);
             try {
                 const { data } = await axios.get(
+<<<<<<< HEAD
                     `/api/game/${id}`,
+=======
+                    `/game/${id}`,
+>>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
                     { withCredentials: true }
                 );
 
@@ -54,7 +63,11 @@ function GameEdit() {
         async function fetchTeams() {
             try {
                 const { data } = await axios.get(
+<<<<<<< HEAD
                     `/api/team/`,
+=======
+                    `/team/`,
+>>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
                     { withCredentials: true }
                 );
                 if (data.error) throw "Error fetching teams";
@@ -94,12 +107,19 @@ function GameEdit() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (saving) return;
+        setSaving(true);
+
         formData.score1 = Number(formData.score1);
         formData.score2 = Number(formData.score2);
 
         if(isEditPage) {
             try {
+<<<<<<< HEAD
                 const response = await axios.put(`/api/game/${id}`, formData, { withCredentials: true },{
+=======
+                const response = await axios.put(`/game/${id}`, formData, { withCredentials: true },{
+>>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
                     headers: { "Content-Type": "application/json" }
                 });
                 console.log("Edit successful:", response.data);
@@ -109,9 +129,14 @@ function GameEdit() {
                 console.error(err.response?.data?.error);
                 alert(err.response?.data?.error || err.message);
             }
+
         } else {
             try {
+<<<<<<< HEAD
                 const response = await axios.post(`/api/game/create`,  formData, { withCredentials: true },{
+=======
+                const response = await axios.post(`/game/create`,  formData, { withCredentials: true },{
+>>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
                     headers: { "Content-Type": "application/json" }
                 });
                 console.log("New game successful:", response);
@@ -122,6 +147,8 @@ function GameEdit() {
                 alert(err.response?.data?.error || err.message);
             }
         }
+
+        setSaving(false);
     };
 
     if (loading) {
@@ -268,7 +295,7 @@ function GameEdit() {
 
                         <br />
 
-                        <button type="submit">Submit</button>
+                        <button type="submit" disabled={saving}>Submit</button>
                     </form>
                 </div>
 

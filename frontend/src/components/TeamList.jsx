@@ -3,6 +3,7 @@ import GenericItem from './GenericItem';
 import NotFound from './NotFound';
 import axios from 'axios';
 import sports from '../shared/enums/sports.js';
+import skills from "../shared/enums/skills.ks"
 import {Link, useParams, useNavigate} from 'react-router-dom';
 
 const TeamList = () => {
@@ -110,9 +111,9 @@ const TeamList = () => {
           className="form-input"
       >
           <option value="">Enter a distance range</option>
-          <option value="close">Close (0-15 miles)</option>
-          <option value="moderate">Moderate (15-30 miles)</option>
-          <option value="far">Far (30-100 miles)</option>
+          <option value="15">Close (0-15 miles)</option>
+          <option value="30">Moderate (15-30 miles)</option>
+          <option value="100">Far (30-100 miles)</option>
       </select>
       </div>
 
@@ -123,10 +124,12 @@ const TeamList = () => {
               onChange={(e) => setSkillLevel(e.target.value)}
               className="form-input"
           >
-              <option value="any">Enter a Skill Level</option>
-              <option value="beginner">Beginner</option>
-              <option value="intermediate">Intermediate</option>
-              <option value="advanced">Advanced</option>
+              <option value = ""> Enter a Skill Level</option>
+              {skills.map((lvl) => (
+                <option key = {lvl} value = {lvl}>
+                  {lvl}
+                </option>
+              ))}
           </select>
       </div>
 

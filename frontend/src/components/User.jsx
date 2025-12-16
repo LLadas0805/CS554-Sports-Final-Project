@@ -147,6 +147,9 @@ const User = (props) => {
             <Link className='link' to='/users'>
               Return To User List
             </Link>
+            <Link className='link' to='/'>
+              Return Home
+            </Link>
           </div>
         </div>
       );

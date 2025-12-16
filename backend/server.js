@@ -37,6 +37,7 @@ const rewriteUnsupportedBrowserMethods = (req, res, next) => {
 
 app.use(express.urlencoded({extended: true}));
 app.use(rewriteUnsupportedBrowserMethods);
+
 app.use(cors({
   credentials: true
 }));
@@ -51,6 +52,13 @@ const frontendPath = path.join('dist');
 app.use(express.static(path.join(process.cwd(), "dist")));
 
 // 3. React SPA catch-all
+app.get(/^(?!\/api).*/, (req, res) => {
+  res.sendFile(path.join(process.cwd(), "dist", "index.html"));
+});
+
+app.use(express.static(path.join(process.cwd(), "dist")));
+
+
 app.get(/^(?!\/api).*/, (req, res) => {
   res.sendFile(path.join(process.cwd(), "dist", "index.html"));
 });
@@ -87,7 +95,7 @@ setupSocket(io);
 
 initIndexes();
 
-const PORT = process.env.PORT || 3000; // fallback only for local dev
+const PORT = process.env.PORT || 3000; 
 
 server.listen(PORT, () => {
   console.log("We've now got a server!");

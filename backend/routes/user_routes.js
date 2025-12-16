@@ -5,7 +5,10 @@ import { accountVerify, accountLogged } from '../middleware/middleware_auth.js';
 import * as users from '../data/users.js';
 import {cacheUserId, cacheUsers } from "../middleware/middleware_cache_user.js"
 import sports from "../shared/enums/sports.js";
+<<<<<<< HEAD
 import skills  from "../shared/enums/skills.js";
+=======
+>>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
 import statesCities from '../shared/data/US_States_and_Cities.json' with { type: 'json' };
 
 import client from '../config/redisClient.js';
@@ -148,22 +151,6 @@ router.route('/filter')
       res.status(200).json(userList)
     } catch (e) {
       return res.status(500).json({error: `Failed to filter users: ${e}`})
-    }
-  });
-
-router.route('/invites')
-  .get(accountVerify, async (req, res) => {
-    try {
-      const sessionUser = req.session.user;
-      if (!sessionUser || !sessionUser._id) {
-        return res.status(401).json({ error: 'Not logged in' });
-      }
-
-      const invites = await users.getPendingTeamInvites(sessionUser._id.toString());
-      return res.status(200).json(invites);
-    } catch (e) {
-      console.error(e);
-      return res.status(500).json({ error: `Failed to get invites: ${e}` });
     }
   });
 
@@ -319,7 +306,50 @@ router.route('/login')
     }    
   });
 
-router.route('/requests/:userId/:teamId')
+router.route('/invites/:id')
+  .get(accountVerify, async (req, res) => {
+    try {
+     
+      const invites = await users.getPendingTeamInvites(req.params.id);
+      return res.status(200).json(invites);
+    } catch (e) {
+      console.error(e);
+      return res.status(500).json({ error: `Failed to get invites: ${e}` });
+    }
+  });
+
+
+router.route('/invites/accept')
+  .post(accountVerify, async (req, res) => {
+    try {
+      const sessionUser = req.session.user;
+      const { teamId } = req.body;
+      helper.validText(teamId, 'team ID');
+      if (!ObjectId.isValid(teamId)) throw 'invalid team ID';
+
+      const result = await users.acceptTeamInvite(sessionUser._id, teamId);
+
+      const io = req.app.locals.io;
+      
+      io.to(result.team.owner.toString()).emit('notification', {
+        type: 'TEAM_INVITE_ACCEPTED',
+        teamId,
+        from: sessionUser._id,
+        message: `${result.team.teamName} invite accepted by ${result.user.username}!` 
+      });
+      
+      await client.del(`user_id:${sessionUser._id.toString()}`);
+      await client.del("users")
+      await client.del(`team_id:${teamId}`);
+      await client.del("teams")
+
+      res.status(200).json(result);
+    } catch (e) {
+      res.status(500).json({ error: `Failed to accept invite: ${e}` });
+    }
+  });
+
+router.route('/invites/:userId/:teamId')
     .post(accountVerify, async(req, res) => {
         try {
             helper.validText(req.params.teamId, 'team ID');
@@ -338,15 +368,11 @@ router.route('/requests/:userId/:teamId')
               type: "TEAM_INVITE_RECEIVED",
               teamId: req.params.teamId,
               from: req.session.user._id,
-              message: "Team invite received!"
+              message: `Team invite received from ${result.team.teamName}!`
             });
 
-            io.to(req.session.user._id).emit("notification", {
-              type: "TEAM_INVITE_SENT",
-              teamId: req.params.teamId,
-              to: req.params.userId,
-            });
-
+            await client.del(`user_id:${req.params.userId}`);
+            await client.del("users")
             res.status(200).json(result);
         } catch (e) {
             res.status(500).json({error: `Failed to invite user to team: ${e}`})
@@ -357,13 +383,15 @@ router.route('/requests/:userId/:teamId')
             helper.validText(req.params.teamId, 'team ID');
             if (!ObjectId.isValid(req.params.teamId)) throw 'invalid object ID';
 
-            helper.validText(req.params.memberId, 'member ID');
-            if (!ObjectId.isValid(req.params.memberId)) throw 'invalid object ID';   
+            helper.validText(req.params.userId, 'user ID');
+            if (!ObjectId.isValid(req.params.userId)) throw 'invalid object ID';   
         } catch (e) {
             return res.status(400).json({error: e});
         }
         try {
             const result = await users.removeTeamInvite(req.params.userId, req.params.teamId);
+            await client.del(`user_id:${req.params.userId}`);
+            await client.del("users")
             res.status(200).json(result);
         } catch (e) {
             res.status(500).json({error: `Failed to remove invite: ${e}`})

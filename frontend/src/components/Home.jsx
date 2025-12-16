@@ -12,8 +12,8 @@ function Home(props) {
   const [loggedId, setLoggedId] = useState(null)
   const [activeTeams, setActiveTeams] = useState([]);
   const [pendingInvites, setPendingInvites] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState([]);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
-
 
 
   useEffect(() => {
@@ -27,9 +27,17 @@ function Home(props) {
           setLoggedId(data.user._id)
           setLogged(true);
 
+          try {
+            const invitesRes = await axios.get(
+              `/user/invites/${data.user._id}`,
+              { withCredentials: true }
+            );
+            console.log(invitesRes);
+            setPendingInvites(invitesRes.data || []);
+          } catch (err) {
+            console.error("Error fetching invites:", err);
+          }
           
-          setPendingInvites(data.user.teamInvites || []);
-
           const teamsRes = await axios.get(
             `/api/team/members/${data.user._id}`,
             { withCredentials: true }
@@ -39,7 +47,7 @@ function Home(props) {
 
           try {
             const eventsRes = await axios.get(
-              `/api/events/upcoming/${data.user._id}`,
+              `/api/game/${data.user._id}/upcoming`,
               { withCredentials: true }
             );
             setUpcomingEvents(eventsRes.data || []);
@@ -47,11 +55,19 @@ function Home(props) {
             console.error("Error fetching upcoming events:", err);
             setUpcomingEvents([]); // fail silently for now
           }
+
+          const teamOwned = await axios.get( `/team/user/${data.user._id}/owned/`,
+            { withCredentials: true })
+
+          if (teamOwned.data) {
+            setPendingRequests(teamOwned.data.joinRequests)
+          }
+          
         } else {
             setLogged(false)
         }
         setLoading(false);
-
+       
       } catch (e) {
         console.log(e);
         setLoading(false)
@@ -85,14 +101,21 @@ function Home(props) {
         { withCredentials: true }
       );
 
-      // Optionally, add the team to activeTeams if backend returns it instead
-      // For now we'll just remove the invite from the list
       setPendingInvites((prev) =>
         prev.filter((i) => i._id !== invite._id)
       );
 
-      // If you want to be fancy you could also refetch active teams here
-      // or push a new team object into activeTeams.
+      let {data} = await axios.get("/user/auth", {
+          withCredentials: true
+      });
+
+      const teamsRes = await axios.get(
+        `/team/members/${data.user._id}`,
+        { withCredentials: true }
+      );
+
+      setActiveTeams(teamsRes.data || activeTeams);
+    
     } catch (err) {
       console.error("Error accepting invite:", err);
       alert("Failed to accept invite.");
@@ -101,14 +124,10 @@ function Home(props) {
 
   const handleDeclineInvite = async (invite) => {
     try {
-      await axios.post(
-        "/api/user/invites/decline",
-        {
-          teamId: invite.teamId
-        },
+      await axios.delete(
+        `/api/user/invites/${loggedId}/${invite.teamId}`,
         { withCredentials: true }
       );
-
       // Remove the invite locally
       setPendingInvites((prev) =>
         prev.filter((i) => i._id !== invite._id)
@@ -116,6 +135,44 @@ function Home(props) {
     } catch (err) {
       console.error("Error declining invite:", err);
       alert("Failed to decline invite.");
+    }
+  };
+
+  const handleAcceptRequest = async (request) => {
+    try {
+      const result = await axios.post(
+        `/team/members/${request.teamId}/${request.userId}`,
+        {},
+        { withCredentials: true }
+      );
+
+      console.log(result);
+
+      setPendingRequests((prev) =>
+        prev.filter((i) => i._id !== request._id)
+      );
+
+      setActiveTeams(prevTeams => [...prevTeams, result.data.team]);
+
+    } catch (err) {
+      console.error("Error accepting request:", err);
+      alert("Failed to accept request.");
+    }
+  };
+
+  const handleDeclineRequest = async (request) => {
+    try {
+      await axios.delete(
+        `/team/requests/${request.teamId}/${request.userId}`,
+        { withCredentials: true }
+      );
+      // Remove the invite locally
+      setPendingRequests((prev) =>
+        prev.filter((i) => i._id !== request._id)
+      );
+    } catch (err) {
+      console.error("Error declining request:", err);
+      alert("Failed to decline request.");
     }
   };
 
@@ -158,55 +215,88 @@ function Home(props) {
                       ) : (
                         <ul>
                           {activeTeams.map((team) => (
-                            <Link to={`/teams/${team._id}`}>
-                              {team.teamName} {team.owner === loggedId && "(Owner)"}
-                            </Link>
+                            <li key={team._id}>
+                              <Link to={`/teams/${team._id}`}>
+                                {team.teamName} {team.owner === loggedId && "(Owner)"}
+                              </Link>
+                            </li>
                           ))}
                         </ul>
                       )}
                     </section>
 
+                    <section className="home-section">
+                      <h2>Pending Team Invites</h2>
+                      {pendingInvites.length === 0 ? (
+                        <p>You have no pending invites.</p>
+                      ) : (
+                        <ul>
+                          {pendingInvites.map((invite) => (
+                            <li key={invite._id}>
+                              <div>
+                                {/* Team name / info */}                               
+                                  <>
+                                    Invite to join <strong>{invite.team.teamName}</strong>                                 
+                                  </>
+                              </div>
 
-                    <h2>Pending Team Invites</h2>
-                    {pendingInvites.length === 0 ? (
-                      <p>You have no pending invites.</p>
-                    ) : (
-                      <ul>
-                        {pendingInvites.map((invite) => (
-                          <li key={invite._id}>
-                            <div>
-                              {/* Team name / info */}
-                              {invite.teamName ? (
-                                <>
-                                  Invite to join <strong>{invite.teamName}</strong>
-                                  {invite.inviterName && <> from {invite.inviterName}</>}
-                                </>
-                              ) : (
-                                <>Team invite (ID: {invite.teamId})</>
-                              )}
-                            </div>
-
-                            {/* Buttons */}
-                            <div style={{ marginTop: "0.5rem" }}>
-                              <button onClick={() => handleAcceptInvite(invite)}>
-                                Accept
-                              </button>
-                              <button
-                                onClick={() => handleDeclineInvite(invite)}
-                                style={{ marginLeft: "0.5rem" }}
-                              >
-                                Decline
-                              </button>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-
-                    
-
+                              {/* Buttons */}
+                              <div style={{ marginTop: "0.5rem" }}>
+                                <button onClick={() => handleAcceptInvite(invite)}>
+                                  Accept
+                                </button>
+                                <button
+                                  onClick={() => handleDeclineInvite(invite)}
+                                  style={{ marginLeft: "0.5rem" }}
+                                >
+                                  Decline
+                                </button>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </section>
 
                     <section className="home-section">
+                      <h2>Team Join Requests:</h2>
+                      {pendingRequests.length === 0 ? (
+                        <p>You have no join requests.</p>
+                      ) : (
+                        <ul>
+                          {pendingRequests.map((request) => (
+                            <li key={request._id}>
+                              <div>
+                                {/* User name / info */}
+                                {request.userName ? (
+                                  <>
+                                    Request to join <strong>{request.teamName}</strong> from <strong>{request.userName}</strong>
+                                  </>
+                                ) : (
+                                  <>Team join request (ID: {request.userId})</>
+                                )}
+                              </div>
+
+                              {/* Buttons */}
+                              <div style={{ marginTop: "0.5rem" }}>
+                                <button onClick={() => handleAcceptRequest(request)}>
+                                  Accept
+                                </button>
+                                <button
+                                  onClick={() => handleDeclineRequest(request)}
+                                  style={{ marginLeft: "0.5rem" }}
+                                >
+                                  Decline
+                                </button>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </section>
+
+                     <section className="home-section">
+
                       <h2>Upcoming Events</h2>
                       {upcomingEvents.length === 0 ? (
                         <p>No upcoming events. Once your teams schedule games or practices, they’ll show up here.</p>
@@ -214,10 +304,10 @@ function Home(props) {
                         <ul>
                           {upcomingEvents.map((event) => (
                             <li key={event._id}>
-                              <div>
-                                <strong>{event.title || "Team Event"}</strong>
-                                {event.teamName && <> – {event.teamName}</>}
-                              </div>
+                              <Link to={`/games/${event._id}`}>
+                                  <strong>{event.team1.name} vs. {event.team2.name}</strong>
+                                  {event.teamName && <> – {event.teamName}</>} 
+                              </Link>
                               {event.date && (
                                 <div>
                                   {new Date(event.date).toLocaleString(undefined, {
@@ -226,13 +316,13 @@ function Home(props) {
                                   })}
                                 </div>
                               )}
-                              {event.location && <div>{event.location}</div>}
+                              <div>{event.city}, {event.state}</div>
                             </li>
                           ))}
                         </ul>
                       )}
                     </section>
-
+                    
                 </div>
             ) : (
                 <div className="pages">

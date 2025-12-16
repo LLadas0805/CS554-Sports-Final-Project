@@ -3,10 +3,10 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { socket } from "../socket";
 
-function Login(props) {
+function Login({ setUser }) {
 
     const navigate = useNavigate();
-
+    const [loading, setLoading] = useState(false);
     const defaultData = {
             username: '',
             password: '',
@@ -25,22 +25,27 @@ function Login(props) {
 
     const handleSubmit = async (e) => {
             e.preventDefault();
+
+            if (loading) return;
+
+            setLoading(true);
             try {
                 const response = await axios.post("/api/user/login", formData, { withCredentials: true }, {
                     headers: { "Content-Type": "application/json" }
                 });
                 console.log("Login successful:", response.data);
                 alert("Login successful!");
+                setUser(response.data)
                 setFormData(defaultData); 
                 socket.connect();
                 navigate(`/`);
             } catch (err) {
                 console.error(err.response?.data?.error);
                 alert(err.response?.data?.error || err.message);
+            } finally {
+                setLoading(false);
             }
         };
-
- 
   return (
     <div>
         <h1>Sign in</h1>
@@ -70,7 +75,7 @@ function Login(props) {
                         />
                     </div>
                     <br></br>
-                    <button type="submit">Login</button>
+                    <button type="submit" disabled={loading}>Login</button>
                 </form>
               </div>
         <div className = "pages">

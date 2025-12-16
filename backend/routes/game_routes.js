@@ -5,7 +5,10 @@ import { accountVerify, accountLogged } from '../middleware/middleware_auth.js';
 import {cacheGameId, cacheGames } from "../middleware/middleware_cache_game.js"
 import * as games from '../data/games.js';
 import sports from "../shared/enums/sports.js";
+<<<<<<< HEAD
 import skills  from "../shared/enums/skills.js";
+=======
+>>>>>>> dd8435f4a9c6c975135e4d24ff5b0528c658e194
 import statesCities from '../shared/data/US_States_and_Cities.json' with { type: 'json' };
 
 import client from '../config/redisClient.js';
@@ -14,10 +17,12 @@ const router = Router();
 
 
 router.route('/')
-  .get(cacheGames, async (req, res) => {
+  .get(accountVerify, cacheGames, async (req, res) => {
     try {
+      const userId = req.session.user._id.toString();
+      const cacheKey = `games:${userId}`;
       const gameList = await games.getAllGames(req.session.user);
-      await client.set("games", JSON.stringify(gameList));
+      await client.set(cacheKey, JSON.stringify(gameList));
       return res.status(200).json(gameList);
     } catch (e) {
       return res.status(500).json({ error: `Failed to get games: ${e}` });
@@ -75,8 +80,8 @@ router.route('/create')
         date
       );
 
-      await client.set(`game_id:${req.params.id}`, JSON.stringify(game));
-      await client.del("games")
+      await client.del(`games:${req.session.user._id.toString()}`);
+
 
       return res.status(200).json(game);
 
@@ -96,8 +101,8 @@ router.route('/:id')
 
     try {
       let game = await games.getGameById(req.params.id)
-      await client.set(`_id:${req.params.id}`, JSON.stringify(game));
-      await client.del("games");
+      await client.set(`game_id:${req.params.id}`, JSON.stringify(game));
+      await client.del(`games:${req.session.user._id.toString()}`);
       return res.status(200).json(game);
     } catch (e) {
       if (e === 'No game with that id') {
@@ -149,8 +154,9 @@ router.route('/:id')
         sport,
         date);
 
-      await client.set(`_id:${req.params.id}`, JSON.stringify(updatedGame));
-      await client.del("games");
+      await client.set(`game_id:${req.params.id}`, JSON.stringify(updatedGame));
+      await client.del(`games:${req.session.user._id.toString()}`);
+
 
       return res.status(200).json(updatedGame);
     } catch (e) {
@@ -174,7 +180,8 @@ router.route('/:id')
     try {
       let deleteGame = await games.deleteGame(req.params.id, req.session.user);
       await client.del(`game_id:${req.params.id}`);
-      await client.del("games")
+      await client.del(`games:${req.session.user._id.toString()}`);
+
       return res.status(200).json(deleteGame);
     } catch (e) {
       if (e === 'team not found') {
@@ -185,7 +192,7 @@ router.route('/:id')
     }
   });
 
-  router.route('/team/:teamId/upcoming')
+  router.route('/team/:teamId')
   .get(async (req, res) => {
     try {
       helper.validText(req.params.teamId, 'team ID');
@@ -195,7 +202,24 @@ router.route('/:id')
     }
 
     try {
-      const upcomingGames = await games.getUpcomingGamesByTeamId(req.params.teamId);
+      const gamesTeamId = await games.getGamesByTeamId(req.params.teamId);
+      return res.status(200).json(gamesTeamId);
+    } catch (e) {
+      return res.status(500).json({error: `Failed to get games by ID: ${e}`});
+    }
+  });
+
+  router.route('/:userId/upcoming')
+  .get(async (req, res) => {
+    try {
+      helper.validText(req.params.userId, 'user ID');
+      if (!ObjectId.isValid(req.params.userId)) throw 'invalid object ID';
+    } catch (e) {
+      return res.status(400).json({error: e});
+    }
+
+    try {
+      const upcomingGames = await games.getUpcomingGamesByUserId(req.params.userId);
       return res.status(200).json(upcomingGames);
     } catch (e) {
       return res.status(500).json({error: `Failed to get upcoming games: ${e}`});
