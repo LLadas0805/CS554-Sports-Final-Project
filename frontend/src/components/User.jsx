@@ -81,75 +81,93 @@ const User = (props) => {
       );
     } else {
       return (
-        <div>
-          <h1>{userData.username}</h1>
-          <div className = "row">
-            <h2>{userData.firstName} {userData.lastName}</h2>
-          </div>
-          <div className = "page">
-            <div className = "row">
-              <h2 className = "tag">{userData.city}, {userData.state}</h2>
-            </div>
-            <h2 className = "tag">Contact Info:</h2>
-            <div className = "row">
-                <h3 className = "tag">{userData.email} | {userData.phoneNumber}</h3>
-            </div>
-            <h2>Preferred Sports:</h2>
-            <h3>Advanced</h3>
-            <p>
-            {userData.advancedSports && userData.advancedSports.length > 0
-                ? userData.advancedSports.join(", ")
-                : "None listed"}
-            </p>
+           <div className="page user-profile text-left">
+              <div className="section user-profile__header">
+                <h1 className="user-profile__name">
+                  {userData.firstName} {userData.lastName}
+                </h1>
+                <p className="user-profile__username">@{userData.username}</p>
+                <p className="user-profile__meta">
+                  {userData.city}, {userData.state}
+                </p>
 
-            <h3>Intermediate</h3>
-            <p>
-            {userData.intermediateSports && userData.intermediateSports.length > 0
-                ? userData.intermediateSports.join(", ")
-                : "None listed"}
-            </p>
+                {logged && (
+                  <div className="user-profile__actions">
+                    <Link className="link" to={`/users/edit/${id}`}>Edit User</Link>
+                    <button className="link" onClick={handleLogout}>Logout</button>
+                  </div>
+                )}
+              </div>
 
-            <h3>Beginner</h3>
-            <p>
-            {userData.beginnerSports && userData.beginnerSports.length > 0
-                ? userData.beginnerSports.join(", ")
-                : "None listed"}
-            </p>
-            
-            <h2>Active Teams</h2>
-              {activeTeams.length === 0 ? (
-                <p>None</p>
-              ) : (
-                <ul>
-                  {activeTeams.map((team) => (
-                    <li key={team._id}>
-                      <Link to={`/teams/${team._id}`}>
-                        {team.teamName} {team.owner === id && "(Owner)"}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <div className="user-profile__grid">
+                <div className="user-profile__col">
+                  <div className="section">
+                    <h2>Contact Information</h2>
+                    <p className="user-profile__contact">{userData.email}</p>
+                    <p className="user-profile__contact">{userData.phoneNumber}</p>
+                  </div>
 
-            {logged && (
-                <div className = "pages">
-                    <Link className='link' to={`/users/edit/${id}`}>
-                        Edit User
-                    </Link>
-                    <button className="link" onClick={handleLogout}>
-                        Logout
-                    </button>
+                  <div className="section">
+                    <h2>Preferred Sports</h2>
+
+                    <div className="user-profile__sports">
+                      <div>
+                        <h3>Advanced</h3>
+                        <p>
+                          {userData.advancedSports?.length
+                            ? userData.advancedSports.join(", ")
+                            : "None listed"}
+                        </p>
+                      </div>
+
+                      <div>
+                        <h3>Intermediate</h3>
+                        <p>
+                          {userData.intermediateSports?.length
+                            ? userData.intermediateSports.join(", ")
+                            : "None listed"}
+                        </p>
+                      </div>
+
+                      <div>
+                        <h3>Beginner</h3>
+                        <p>
+                          {userData.beginnerSports?.length
+                            ? userData.beginnerSports.join(", ")
+                            : "None listed"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-            )}
 
-            <Link className='link' to='/users'>
-              Return To User List
-            </Link>
-            <Link className='link' to='/'>
-              Return Home
-            </Link>
-          </div>
-        </div>
+                <div className="user-profile__col">
+                  <div className="section">
+                    <h2>Active Teams</h2>
+                    {activeTeams.length === 0 ? (
+                      <p>None</p>
+                    ) : (
+                      <ul className="user-profile__teams">
+                        {activeTeams.map((team) => (
+                          <li key={team._id}>
+                            <Link className="user-profile__teamlink" to={`/teams/${team._id}`}>
+                              {team.teamName} {team.owner === id && "(Owner)"}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  <div className="user-profile__footer">
+                    <Link className="link" to="/users">Return To User List</Link>
+                    <Link className="link" to="/">Return Home</Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          
       );
     }
     

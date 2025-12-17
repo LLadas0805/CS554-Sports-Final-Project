@@ -503,3 +503,127 @@ textarea:focus {
   font-size: 0.9rem;
   color: #93c5fd;
 }
+
+.user-profile__header {
+  text-align: left;
+}
+
+.user-profile__name {
+  margin: 0 0 0.25rem 0;
+}
+
+.user-profile__username {
+  margin: 0 0 0.25rem 0;
+  opacity: 0.85;
+}
+
+.user-profile__meta {
+  margin: 0.25rem 0 0 0;
+  opacity: 0.85;
+}
+
+.user-profile__actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.user-profile__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+@media (max-width: 900px) {
+  .user-profile__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.user-profile__sports {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.user-profile__teams li {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.user-profile__teamlink {
+  text-decoration: none;
+}
+
+.user-profile__footer {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.team-view__header {
+  text-align: left;
+}
+
+.team-view__title {
+  margin: 0 0 0.35rem 0;
+}
+
+.team-view__desc {
+  margin: 0 0 0.75rem 0;
+  opacity: 0.9;
+}
+
+.team-view__meta {
+  display: grid;
+  gap: 0.25rem;
+  opacity: 0.9;
+  margin-top: 0.5rem;
+}
+
+.team-view__headerActions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.team-view__grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 1.25rem;
+}
+
+@media (max-width: 900px) {
+  .team-view__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.team-view__listItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.btn-danger {
+  background: #dc2626;
+  color: #fff;
+}
+
+.btn-danger:hover {
+  background: #991b1b;
+}
+
+.team-view__smallBtn {
+  padding: 0.35rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.success {
+  margin-top: 0.75rem;
+  color: #16a34a;
+  font-weight: 600;
+}

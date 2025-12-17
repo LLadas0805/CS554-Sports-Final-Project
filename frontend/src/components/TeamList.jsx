@@ -64,15 +64,11 @@ const TeamList = () => {
 
     return bestSportWeight + skillBonus;
   };
-
-  // ---- initial load of teams ----
   useEffect(() => {
     async function fetchTeams() {
       try {
         setLoading(true);
         setError('');
-
-        // OLD STYLE: relative /api route
         const { data } = await axios.get('/api/team', { withCredentials: true });
 
         if (data?.error) throw new Error(data.error);
