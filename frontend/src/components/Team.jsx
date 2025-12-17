@@ -171,130 +171,137 @@ const Team = (props) => {
   const displayName = name || teamName || 'Unnamed Team';
 
   return (
-    <div>
-      <h1>{displayName}</h1>
+    <div className="page team-view text-left">
+      <div className="section team-view__header">
+        <h1 className="team-view__title">{displayName}</h1>
+        <p className="team-view__desc">{description}</p>
 
-      <div className="row">
-        <h2>{description}</h2>
-      </div>
-
-      <div className="page">
-        <div className="row">
-          <h2 className="tag">
-            {city}, {state}
-          </h2>
+        <div className="team-view__meta">
+          <span>{city}, {state}</span>
+          <span>Skill: {experience}</span>
+          <span>
+            Sports: {preferredSports?.length ? preferredSports.join(", ") : "None listed"}
+          </span>
         </div>
 
-        <h2 className="tag">Skill Level: {experience}</h2>
-
-        <h2>Preferred Sports:</h2>
-        <p>{preferredSports?.length > 0 ? preferredSports.join(', ') : 'None listed'}</p>
-
-        <h2>Team Owner:</h2>
-        {ownerData ? (
-          <p>
-            <Link to={`/users/${ownerData._id}`}>
-              {ownerData.username} ({ownerData.firstName} {ownerData.lastName})
-            </Link>
-          </p>
-        ) : (
-          <p>Loading owner...</p>
-        )}
-
-        <h2>Team Members:</h2>
-        {membersData.length > 0 ? (
-          <ul>
-            {membersData.map((member) => {
-              const memberIdStr = String(member._id);
-              const isSelf = authUser && authUser._id === memberIdStr;
-              const isOwnerMember = teamData.owner && String(teamData.owner) === memberIdStr;
-              return (
-                <li key={member._id}>
-                  <Link to={`/users/${member._id}`}>
-                    {member.username} ({member.firstName} {member.lastName})
-                  </Link>
-                  {logged && isOwner && !isOwnerMember && (
-                    <button
-                      onClick={async () => await handleRemoveMember(memberIdStr)}
-                      style={{ marginLeft: 'auto', background: 'transparent', border: 'none', cursor: 'pointer' }}
-                    >
-                      Remove
-                    </button>
-                  )}
-                  {logged && isSelf && !isOwnerMember && (
-                    <button
-                      onClick={async () => await handleRemoveMember(memberIdStr)}
-                      style={{ marginLeft: 'auto', background: 'transparent', border: 'none', cursor: 'pointer' }}
-                    >
-                      Leave
-                    </button>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <p>No members yet.</p>
-        )}
-
-        <h2>Game History:</h2>
-        {gamesData.length > 0 ? (
-          <ul>
-            {gamesData.map((game) => (
-              <li key={game._id}>
-                <Link to={`/games/${game._id}`}>
-                  {game.team1.name} vs. {game.team2.name} - {game.date.slice(0, 10)}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No games yet.</p>
-        )}
+        <div className="team-view__headerActions">
+          {!isOwner && logged && (
+            <button className="btn btn-primary" onClick={handleJoinRequest}>
+              Request to Join Team
+            </button>
+          )}
+          <Link className="link" to="/teams">Return To Team List</Link>
+          <Link className="link" to="/">Return Home</Link>
+        </div>
 
         {message && <p className="success">{message}</p>}
         {error && <p className="error">{error}</p>}
+      </div>
 
-        {logged && !isOwner && (
-          <button className="btn btn-primary" onClick={handleJoinRequest}>
-            Request to Join Team
-          </button>
-        )}
+    
 
-        {logged && isOwner && (
-          <div className="pages">
-            <div className="form">
-              <form onSubmit={handleInvite} className="invite-form">
-                <label>
+      <div className="team-view__grid">
+        <div className="team-view__col">
+          <div className="section">
+            <h2>Owner</h2>
+            {ownerData ? (
+              <p>
+                <Link to={`/users/${ownerData._id}`}>
+                  {ownerData.username} ({ownerData.firstName} {ownerData.lastName})
+                </Link>
+              </p>
+            ) : (
+              <p>Loading owner...</p>
+            )}
+          </div>
+
+          <div className="section">
+            <h2>Members</h2>
+            {membersData.length > 0 ? (
+              <ul className="team-view__list">
+                {membersData.map((member) => {
+                  const memberIdStr = String(member._id);
+                  const isSelf = authUser && String(authUser._id) === memberIdStr;
+                  const isOwnerMember = teamData.owner && String(teamData.owner) === memberIdStr;
+
+                  return (
+                    <li key={member._id} className="team-view__listItem">
+                      <Link to={`/users/${member._id}`}>
+                        {member.username} ({member.firstName} {member.lastName})
+                      </Link>
+
+                      {(logged && isOwner && !isOwnerMember) && (
+                        <button
+                          className="btn btn-danger team-view__smallBtn"
+                          onClick={() => handleRemoveMember(memberIdStr)}
+                        >
+                          Remove
+                        </button>
+                      )}
+
+                      {(logged && isSelf && !isOwnerMember) && (
+                        <button
+                          className="btn btn-danger team-view__smallBtn"
+                          onClick={() => handleRemoveMember(memberIdStr)}
+                        >
+                          Leave
+                        </button>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p>No members yet.</p>
+            )}
+          </div>
+
+          {logged && isOwner && (
+            <div className="section">
+              <h2>Owner Tools</h2>
+
+              <form onSubmit={handleInvite} className="team-view__invite">
+                <label className="form-group">
                   Invite user by ID:
                   <input
                     type="text"
                     value={inviteUserId}
                     className="form-input"
                     onChange={(e) => setInviteUserId(e.target.value)}
-                    placeholder="Enter an ID from User URL"
+                    placeholder="Enter a User ID"
                   />
                 </label>
+
                 <button type="submit" className="btn btn-primary">
                   Add Member
                 </button>
               </form>
+
+              <div style={{ marginTop: "0.75rem" }}>
+                <Link className="link" to={`/teams/${id}/edit`}>Edit Team</Link>
+              </div>
             </div>
-
-            <Link className="link" to={`/teams/${id}/edit`}>
-              Edit Team
-            </Link>
+          )}
+        </div>
+        <div className="team-view__col">
+          <div className="section">
+            <h2>Game History</h2>
+            {gamesData.length > 0 ? (
+              <ul className="team-view__list">
+                {gamesData.map((game) => (
+                  <li key={game._id} className="team-view__listItem">
+                    <Link to={`/games/${game._id}`}>
+                      {game.team1.name} vs. {game.team2.name} — {game.date.slice(0, 10)}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No games yet.</p>
+            )}
           </div>
-        )}
-
-        <Link className="link" to="/teams">
-          Return To Team List
-        </Link>
-        
+        </div>
       </div>
-      <Link className='link' to='/'>
-          Return Home
-        </Link>
     </div>
   );
 };

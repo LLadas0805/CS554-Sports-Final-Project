@@ -196,22 +196,6 @@ function Home(props) {
 
             {logged ? (
                 <div className="pages">
-                    <Link className='link' to={`/users/${loggedId}`}>
-                        Go to Profile
-                    </Link>
-                    <Link className='link' to={`/users/`}>
-                        Browse Users
-                    </Link>
-                    <Link className='link' to={`/teams/`}>
-                        Browse Teams
-                    </Link>
-                    <Link className='link' to={`/games/`}>
-                        Browse Games
-                    </Link>
-                    <button className="link" onClick={handleLogout}>
-                        Logout
-                    </button>
-
                     <section className="home-section">
                       <h2>Your Active Teams</h2>
                       {activeTeams.length === 0 ? (
